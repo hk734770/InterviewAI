@@ -1,0 +1,6 @@
+{
+  "name": "InterviewAI - Simulasi Interview Kerja Realistis",
+  "description": "Platform simulasi wawancara video call interaktif dengan AI Recruiter, diagnostik komprehensif 4 pilar STAR, dan viral scorecard 9:16 untuk media sosial.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
