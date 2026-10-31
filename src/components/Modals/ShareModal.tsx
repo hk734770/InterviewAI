@@ -24,7 +24,8 @@ import confetti from 'canvas-confetti';
 import { 
   ScorecardData, 
   exportScorecardToJPG, 
-  getScorecardJPGData 
+  getScorecardJPGData,
+  createScorecardJPGFileSync
 } from '../../utils/canvasExport';
 
 interface ShareModalProps {
@@ -90,7 +91,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     vibeTemplate: 'neon',
   };
 
-  // Generate thumbnail JPG preview 1080x1920 & siapkan file cache agar siap dilampirkan langsung ke WhatsApp
+  // Generate thumbnail JPG preview 1080x1920 & siapkan file cache (gabungan Teks Evaluasi STAR + Scorecard) agar siap dilampirkan langsung ke WhatsApp
   useEffect(() => {
     if (!isOpen) return;
 
@@ -100,10 +101,14 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       .then((res) => {
         if (isMounted) {
           setJpgPreviewUrl(res.dataUrl);
-          if (res.blob) {
+          if (res.waCompositeFile) {
+            setCachedJpgFile(res.waCompositeFile);
+          } else if (res.blob) {
             const fileName = `Scorecard_STAR_${(activeScorecardData.candidateName || 'Johan').replace(/\s+/g, '_')}_${activeScorecardData.score || 84}_1080x1920.jpg`;
             const file = new File([res.blob], fileName, { type: 'image/jpeg' });
             setCachedJpgFile(file);
+          }
+          if (res.blob) {
             setCachedJpgBlob(res.blob);
           }
           if (res.pngBlob) {
@@ -158,17 +163,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
 
   // Helper link promosi Cobain Simulasi Gratis
   const getPromoLink = () => {
-    if (typeof window !== 'undefined' && window.location.origin) {
-      const origin = window.location.origin;
-      const isGoogleRunApp = origin.includes('run.app') || 
-                             origin.includes('google') || 
-                             origin.includes('ais-') || 
-                             origin.includes('localhost');
-      if (!isGoogleRunApp) {
-        return `${origin}/?ref=simulasi-gratis`;
-      }
-    }
-    return 'https://interview-ai.app/?ref=simulasi-gratis';
+    return 'https://interview-ai-wheat-one.vercel.app';
   };
 
   // Pesan WhatsApp yang mengkonfirmasi Lampiran File Gambar Scorecard Format JPG (1080x1920)
@@ -258,40 +253,47 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       : `https://wa.me/?text=${encodeURIComponent(waMessage)}`;
   };
 
-  // EKSEKUSI UTAMA: Melampirkan File Kartu Scorecard STAR format JPG resolusi tinggi (1080x1920) langsung ke pesan WhatsApp
+  // EKSEKUSI UTAMA: Melampirkan Teks Scorecard Evaluasi Interview STAR dan Kartu Scorecard langsung ke pesan WhatsApp
   // Foto otomatis tertempel di bawah teks pesan TANPA perlu menekan Ctrl+V
   const handleSendWhatsApp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const cleanPhone = getCleanWaPhone();
     const waMessage = getFormattedWhatsAppMessage();
-    const fileName = `Scorecard_STAR_${(activeScorecardData.candidateName || 'Johan').replace(/\s+/g, '_')}_${activeScorecardData.score || 84}_1080x1920.jpg`;
 
-    // 1. Siapkan file gambar JPG 1080x1920 resolusi tinggi
-    let fileToShare = cachedJpgFile || (cachedJpgBlob ? new File([cachedJpgBlob], fileName, { type: 'image/jpeg' }) : null);
+    // Salin juga teks evaluasi ke clipboard secara non-blocking
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(waMessage).catch(() => {});
+      }
+    } catch {}
 
+    // 1. Siapkan file gambar JPG resolusi tinggi secara SINKRON (tanpa await)
+    // File ini berisi gabungan Teks Scorecard Evaluasi Interview STAR (di atas) + Kartu Visual Scorecard (di bawah)
+    // sehingga user gesture activation di Hand Phone (Android/iOS) tidak pernah hilang.
+    let fileToShare = cachedJpgFile;
     if (!fileToShare) {
       try {
-        const res = await getScorecardJPGData(activeScorecardData);
-        if (res.blob) {
-          fileToShare = new File([res.blob], fileName, { type: 'image/jpeg' });
-        }
+        fileToShare = createScorecardJPGFileSync(activeScorecardData, true);
+        setCachedJpgFile(fileToShare);
       } catch (err) {
-        console.warn('Error generating file to share:', err);
+        console.warn('Error generating synchronous file to share:', err);
       }
     }
 
-    // 2. Jika peramban mendukung Web Share API Level 2 (Android, iOS, Windows 10/11 Chrome/Edge, macOS Safari):
-    // Melampirkan file foto JPG 1080x1920 dan teks caption secara otomatis!
-    // Foto otomatis tampil di preview WhatsApp dengan teks tertempel langsung di bawahnya (Tanpa menekan Ctrl+V)
+    // 2. Jika dibuka di Hand Phone (atau peramban yang mendukung Web Share API Level 2 dengan file):
+    // Langsung kirim Teks Scorecard Evaluasi Interview STAR + Scorecard tanpa await sebelumnya!
+    // Catatan penting: Jangan menyertakan properti `title` saat mengirim `files` + `text` ke WhatsApp di Android/iOS
+    // agar WhatsApp tidak membuang `text` (EXTRA_TEXT), serta gambar komposit memastikan Teks Evaluasi STAR + Scorecard
+    // selalu tampil utuh di semua versi WhatsApp Hand Phone.
     if (fileToShare && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       try {
-        if (navigator.canShare && navigator.canShare({ files: [fileToShare] })) {
+        const canShareFiles = typeof navigator.canShare === 'function' ? navigator.canShare({ files: [fileToShare] }) : true;
+        if (canShareFiles) {
           await navigator.share({
-            title: `Scorecard STAR - ${activeScorecardData.candidateName || 'Johan'}`,
+            files: [fileToShare],
             text: waMessage,
-            files: [fileToShare]
           });
-          setFeedbackMsg('✅ Berhasil! Foto kartu Scorecard JPG 1080x1920 otomatis tertempel di bawah teks di WhatsApp tanpa menekan Ctrl+V.');
+          setFeedbackMsg('✅ Berhasil! Teks Scorecard Evaluasi Interview STAR dan Kartu Scorecard berhasil dikirim ke WhatsApp.');
           try {
             confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
           } catch {}
@@ -303,8 +305,8 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       }
     }
 
-    // 3. Fallback: Otomatis unduh file JPG 1080x1920 ke perangkat
-    exportScorecardToJPG(activeScorecardData);
+    // 3. Fallback: Otomatis unduh file JPG gabungan (Teks Evaluasi STAR + Scorecard) ke perangkat
+    exportScorecardToJPG(activeScorecardData, true);
 
     // 4. Salin gambar ke clipboard secara hening di latar belakang
     if (cachedPngBlob && navigator.clipboard && typeof ClipboardItem !== 'undefined') {
@@ -322,7 +324,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     const waUrl = getWhatsAppTargetUrl(cleanPhone, waMessage);
     
     setIsDesktopGuideActive(true);
-    setFeedbackMsg('🚀 WhatsApp terbuka! Foto kartu Scorecard 1080x1920 dan teks pesan telah dipasangkan secara otomatis tanpa menekan Ctrl+V.');
+    setFeedbackMsg('🚀 WhatsApp terbuka! Teks Scorecard Evaluasi Interview STAR dan Scorecard telah disiapkan secara otomatis.');
 
     try {
       confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
@@ -690,8 +692,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               <div className="pt-1 space-y-2.5">
                 <button
                   type="submit"
-                  disabled={isGeneratingJpg}
-                  className="w-full group relative flex items-center justify-center gap-3 py-4 sm:py-4.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 hover:from-emerald-300 hover:via-teal-300 hover:to-cyan-300 text-slate-950 font-black text-sm sm:text-base shadow-2xl shadow-emerald-500/40 border-2 border-white/90 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer ring-4 ring-emerald-400/25 disabled:opacity-50"
+                  className="w-full group relative flex items-center justify-center gap-3 py-4 sm:py-4.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 hover:from-emerald-300 hover:via-teal-300 hover:to-cyan-300 text-slate-950 font-black text-sm sm:text-base shadow-2xl shadow-emerald-500/40 border-2 border-white/90 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer ring-4 ring-emerald-400/25"
                 >
                   <div className="w-10 h-10 rounded-xl bg-slate-950/15 flex items-center justify-center text-xl shrink-0 group-hover:rotate-12 transition-transform">
                     <Paperclip className="w-5 h-5 text-slate-950" />

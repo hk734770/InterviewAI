@@ -381,6 +381,164 @@ export function renderScorecardToCanvas(data: ScorecardData): HTMLCanvasElement 
 }
 
 /**
+ * Merender gabungan Teks Scorecard Evaluasi Interview STAR (di bagian atas)
+ * dan Kartu Visual Scorecard 1080x1920 (tepat di bawahnya) dalam satu gambar utuh.
+ * Memastikan saat dikirim ke WhatsApp di Hand Phone (Android/iOS), baik Teks Evaluasi STAR
+ * maupun gambar Scorecard selalu terkirim bersama-sama.
+ */
+export function renderWhatsAppCompositeToCanvas(data: ScorecardData): HTMLCanvasElement {
+  const scorecardCanvas = renderScorecardToCanvas(data);
+  const width = 1080;
+  const headerHeight = 760;
+  const totalHeight = headerHeight + scorecardCanvas.height;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = totalHeight;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return scorecardCanvas;
+
+  // Latar belakang area pesan teks di atas Scorecard
+  const topBg = ctx.createLinearGradient(0, 0, width, headerHeight);
+  topBg.addColorStop(0, '#050b14');
+  topBg.addColorStop(0.5, '#071521');
+  topBg.addColorStop(1, '#090d16');
+  ctx.fillStyle = topBg;
+  ctx.fillRect(0, 0, width, headerHeight);
+
+  // Kotak Bubble Pesan Teks Evaluasi STAR bergaya WhatsApp Modern
+  const boxX = 60;
+  const boxY = 35;
+  const boxW = width - 120;
+  const boxH = headerHeight - 65;
+
+  const cardGrad = ctx.createLinearGradient(boxX, boxY, boxX + boxW, boxY + boxH);
+  cardGrad.addColorStop(0, 'rgba(7, 29, 36, 0.98)');
+  cardGrad.addColorStop(0.6, 'rgba(11, 25, 42, 0.98)');
+  cardGrad.addColorStop(1, 'rgba(15, 23, 42, 0.98)');
+  ctx.fillStyle = cardGrad;
+  ctx.beginPath();
+  ctx.roundRect(boxX, boxY, boxW, boxH, 32);
+  ctx.fill();
+
+  const borderGrad = ctx.createLinearGradient(boxX, boxY, boxX + boxW, boxY);
+  borderGrad.addColorStop(0, '#10b981');
+  borderGrad.addColorStop(0.5, '#22d3ee');
+  borderGrad.addColorStop(1, '#3b82f6');
+  ctx.strokeStyle = borderGrad;
+  ctx.lineWidth = 3.5;
+  ctx.stroke();
+
+  const candidate = data.candidateName || 'Johan Pratama';
+  const tierText = data.tier || 'TIER S+ (GOKIL PARAH)';
+  const stickerText = data.sticker || '🔥 MENYALA ABANGKUH 🔥';
+  const textX = boxX + 45;
+
+  // Judul Utama Teks Evaluasi
+  ctx.fillStyle = '#34d399';
+  ctx.font = '900 31px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText(`🔥 SCORECARD EVALUASI INTERVIEW STAR (${candidate})`, textX, boxY + 65);
+
+  // Ringkasan Skor, Judul & Stiker
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 26px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText(`⭐ Skor STAR: ${data.score}/100 (${tierText})`, textX, boxY + 122);
+
+  ctx.fillStyle = '#fde047';
+  ctx.font = 'bold 25px "Plus Jakarta Sans", sans-serif';
+  const titleLine = `👑 Judul: ${data.personaTitle}`;
+  ctx.fillText(titleLine.length > 52 ? titleLine.slice(0, 50) + '...' : titleLine, textX, boxY + 166);
+
+  ctx.fillStyle = '#fb7185';
+  ctx.font = 'bold 25px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText(`🏷️ Stiker: ${stickerText}`, textX, boxY + 210);
+
+  // Garis pemisah tipis
+  ctx.strokeStyle = 'rgba(148, 163, 184, 0.22)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(textX, boxY + 235);
+  ctx.lineTo(boxX + boxW - 45, boxY + 235);
+  ctx.stroke();
+
+  // Rincian Nilai STAR
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = '900 26px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('📊 Rincian Nilai STAR:', textX, boxY + 276);
+
+  ctx.fillStyle = '#e2e8f0';
+  ctx.font = '700 24px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText(`• Situation: ${data.situation}% (Gercep Parah)`, textX + 10, boxY + 318);
+  ctx.fillText(`• Task: ${data.task}% (No Drama)`, textX + 10, boxY + 356);
+  ctx.fillText(`• Action: ${data.action}% (Sat-Set Gaspol)`, textX + 10, boxY + 394);
+  ctx.fillText(`• Result: ${data.result}% (Penting Cuan)`, textX + 10, boxY + 432);
+
+  // Garis pemisah kedua
+  ctx.strokeStyle = 'rgba(148, 163, 184, 0.22)';
+  ctx.beginPath();
+  ctx.moveTo(textX, boxY + 458);
+  ctx.lineTo(boxX + boxW - 45, boxY + 458);
+  ctx.stroke();
+
+  // Info Lampiran & Link Promo
+  ctx.fillStyle = '#6ee7b7';
+  ctx.font = '800 22px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('📸 [KARTU SCORECARD STAR (JPG HD) TERLAMPIR DI BAWAH]', textX, boxY + 498);
+
+  ctx.fillStyle = '#f8fafc';
+  ctx.font = 'bold 23px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('🎁 Mau coba uji mental interview lawan AI & dapet Scorecard kayak gini?', textX, boxY + 542);
+
+  ctx.fillStyle = '#bae6fd';
+  ctx.font = 'bold 23px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('👉 Cobain Simulasi Gratis di sini:', textX, boxY + 580);
+
+  // Pill Link URL
+  ctx.fillStyle = 'rgba(6, 182, 212, 0.22)';
+  ctx.beginPath();
+  ctx.roundRect(textX, boxY + 598, 690, 56, 16);
+  ctx.fill();
+  ctx.strokeStyle = '#22d3ee';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '900 24px "JetBrains Mono", monospace';
+  ctx.fillText('🌐 https://interview-ai-wheat-one.vercel.app', textX + 20, boxY + 634);
+
+  // Tempelkan Kartu Visual Scorecard 1080x1920 tepat di bawah Teks Evaluasi STAR
+  ctx.drawImage(scorecardCanvas, 0, headerHeight);
+
+  return canvas;
+}
+
+/**
+ * Konversi DataURL ke objek File secara 100% sinkron (tanpa async/await)
+ * agar tidak menghilangkan user gesture activation saat memanggil navigator.share di Hand Phone.
+ */
+export function dataUrlToFileSync(dataUrl: string, fileName: string, mimeType = 'image/jpeg'): File {
+  const parts = dataUrl.split(',');
+  const byteString = atob(parts[1] || '');
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+  return new File([ab], fileName, { type: mimeType });
+}
+
+/**
+ * Membuat objek File JPG secara sinkron untuk langsung dikirim ke WhatsApp
+ * @param includeTextHeader Jika true, menggabungkan Teks Evaluasi STAR + Scorecard
+ */
+export function createScorecardJPGFileSync(data: ScorecardData, includeTextHeader = true): File {
+  const canvas = includeTextHeader ? renderWhatsAppCompositeToCanvas(data) : renderScorecardToCanvas(data);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+  const fileName = `Scorecard_STAR_${(data.candidateName || 'Johan').replace(/\s+/g, '_')}_${data.score || 84}_1080x1920.jpg`;
+  return dataUrlToFileSync(dataUrl, fileName, 'image/jpeg');
+}
+
+/**
  * Ekspor Scorecard ke format PNG
  */
 export function exportScorecardToPNG(data: ScorecardData): void {
@@ -396,8 +554,8 @@ export function exportScorecardToPNG(data: ScorecardData): void {
  * Ekspor & unduh Scorecard dalam format JPG (JPEG)
  * Mengembalikan string DataURL format JPG
  */
-export function exportScorecardToJPG(data: ScorecardData): string {
-  const canvas = renderScorecardToCanvas(data);
+export function exportScorecardToJPG(data: ScorecardData, includeTextHeader = false): string {
+  const canvas = includeTextHeader ? renderWhatsAppCompositeToCanvas(data) : renderScorecardToCanvas(data);
   const jpgURL = canvas.toDataURL('image/jpeg', 0.95);
   const link = document.createElement('a');
   link.download = `Scorecard_STAR_${(data.candidateName || 'Johan').replace(/\s+/g, '_')}_${data.score || 84}.jpg`;
@@ -407,15 +565,17 @@ export function exportScorecardToJPG(data: ScorecardData): string {
 }
 
 /**
- * Menghasilkan DataURL, Blob Scorecard JPG, dan Blob PNG untuk clipboard
+ * Menghasilkan DataURL, Blob Scorecard JPG, File Gabungan WhatsApp (Teks + Scorecard), dan Blob PNG untuk clipboard
  */
 export async function getScorecardJPGData(data: ScorecardData): Promise<{ 
   dataUrl: string; 
   blob: Blob | null; 
   pngBlob: Blob | null;
+  waCompositeFile: File;
 }> {
   const canvas = renderScorecardToCanvas(data);
   const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+  const waCompositeFile = createScorecardJPGFileSync(data, true);
   
   const blob = await new Promise<Blob | null>((resolve) => {
     canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.95);
@@ -425,7 +585,7 @@ export async function getScorecardJPGData(data: ScorecardData): Promise<{
     canvas.toBlob((b) => resolve(b), 'image/png');
   });
 
-  return { dataUrl, blob, pngBlob };
+  return { dataUrl, blob, pngBlob, waCompositeFile };
 }
 
 /**
@@ -436,19 +596,12 @@ export async function shareScorecardJPGDirectly(
   data: ScorecardData,
   caption: string
 ): Promise<{ success: boolean; method: 'web-share' | 'clipboard' | 'download' }> {
-  const { blob, pngBlob } = await getScorecardJPGData(data);
-  if (!blob) {
-    return { success: false, method: 'download' };
-  }
+  const file = createScorecardJPGFileSync(data, true);
 
-  const fileName = `Scorecard_STAR_${(data.candidateName || 'Johan').replace(/\s+/g, '_')}_${data.score || 84}_1080x1920.jpg`;
-  const file = new File([blob], fileName, { type: 'image/jpeg' });
-
-  // 1. Coba Web Share API dengan File Attachment (Natif melampirkan file JPG ke WhatsApp, foto otomatis tertempel di bawah teks)
+  // 1. Coba Web Share API dengan File Attachment secara langsung (tanpa await sebelumnya agar user gesture tetap aktif di Hand Phone)
   if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
       await navigator.share({
-        title: `Scorecard STAR - ${data.candidateName || 'Johan'}`,
         text: caption,
         files: [file],
       });
@@ -460,18 +613,20 @@ export async function shareScorecardJPGDirectly(
     }
   }
 
+  const { pngBlob } = await getScorecardJPGData(data);
+
   // 2. Salin gambar ke clipboard dalam format image/png di latar belakang & unduh file JPG
   if (pngBlob && typeof navigator !== 'undefined' && navigator.clipboard && typeof ClipboardItem !== 'undefined') {
     try {
       await navigator.clipboard.write([
         new ClipboardItem({ 'image/png': pngBlob })
       ]);
-      exportScorecardToJPG(data);
+      exportScorecardToJPG(data, true);
       return { success: true, method: 'clipboard' };
     } catch (_) {}
   }
 
   // 3. Fallback: Unduh file JPG
-  exportScorecardToJPG(data);
+  exportScorecardToJPG(data, true);
   return { success: true, method: 'download' };
 }
