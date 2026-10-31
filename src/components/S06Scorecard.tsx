@@ -244,7 +244,7 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
   // Gunakan link bersih tanpa memicu crawler intersisial "Cookie check" dari Google Cloud Run
   const promoUrl = typeof window !== 'undefined' && window.location.origin && !isGoogleRunApp
     ? `${window.location.origin}/?ref=simulasi-gratis` 
-    : 'https://interview-ai.app/?ref=simulasi-gratis';
+    : 'https://interview-ai-wheat-one.vercel.app/?ref=simulasi-gratis';
   
   // Caption bergaya gaul anak muda lengkap dengan Lampiran Gambar Scorecard JPG 1080x1920 & promosi simulasi gratis
   const captionText = `Gila bener skor interview AI gue tembus ${evalResult.overallScore}/100 nih 🔥! Judulnya otomatis dapet "${selectedPersona.title}" 😭😂.\n\nSticker: ${activeSticker}\n\n📸 *[FILE GAMBAR SCORECARD STAR (JPG 1080x1920) DILAMPIRKAN]*\nFile kartu Scorecard STAR format JPG resolusi tinggi (1080x1920) dilampirkan langsung di pesan ini.\n\n🎁 Mau coba uji mental interview lawan AI & dapet Scorecard kayak gini?\n👉 Cobain Simulasi Gratis di sini:\n${promoUrl}\n\n#MenyalaAbangku #InterviewAI #STARMethod #GenZCareer`;
@@ -714,8 +714,8 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
                   <span className="text-[8.5px] font-black text-emerald-400 uppercase tracking-wide block leading-none">
                     🔥 COBA SIMULASI INTERVIEW AI GRATIS
                   </span>
-                  <div className="text-[11px] font-mono font-bold text-cyan-300 truncate mt-0.5">
-                    interview.ai/?ref={candidateSlug}{evalResult.overallScore}
+                  <div className="text-[10px] font-mono font-bold text-cyan-300 truncate mt-0.5">
+                    https://interview-ai-wheat-one.vercel.app
                   </div>
                   <span className="text-[8px] text-slate-400 block leading-none mt-0.5">
                     Scan QR atau klik link di bio Story buat tes bareng!
