@@ -279,27 +279,54 @@ export function renderScorecardToCanvas(data: ScorecardData): HTMLCanvasElement 
     ctx.fillRect(px + 22, py + 84, (345 * p.val) / 100, 10);
   });
 
-  // FOOTER / QR CODE BOX (VIRAL CTA)
+  // FOOTER / QR CODE BOX (VIRAL CTA - EYE CATCHING NEON)
   const footerY = 1380;
-  ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+  const footerGrad = ctx.createLinearGradient(90, footerY, width - 90, footerY + 240);
+  footerGrad.addColorStop(0, 'rgba(6, 24, 38, 0.96)');
+  footerGrad.addColorStop(0.5, 'rgba(10, 32, 54, 0.96)');
+  footerGrad.addColorStop(1, 'rgba(15, 23, 42, 0.96)');
+  ctx.fillStyle = footerGrad;
   ctx.beginPath();
   ctx.roundRect(90, footerY, width - 180, 240, 28);
   ctx.fill();
-  ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
-  ctx.lineWidth = 2.5;
+
+  const borderGrad = ctx.createLinearGradient(90, footerY, width - 90, footerY);
+  borderGrad.addColorStop(0, '#34d399');
+  borderGrad.addColorStop(0.5, '#22d3ee');
+  borderGrad.addColorStop(1, '#3b82f6');
+  ctx.strokeStyle = borderGrad;
+  ctx.lineWidth = 4;
   ctx.stroke();
 
-  ctx.fillStyle = '#34d399';
-  ctx.font = '900 26px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('🔥 COBA SIMULASI INTERVIEW AI GRATIS', 140, footerY + 68);
+  // Header Badge Pill inside Footer
+  ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
+  ctx.beginPath();
+  ctx.roundRect(130, footerY + 26, 560, 46, 23);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(52, 211, 153, 0.6)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
 
-  ctx.fillStyle = '#38bdf8';
-  ctx.font = '800 24px "JetBrains Mono", monospace';
-  ctx.fillText('https://interview-ai-wheat-one.vercel.app', 140, footerY + 124);
+  ctx.fillStyle = '#6ee7b7';
+  ctx.font = '900 24px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('🔥 COBA SIMULASI INTERVIEW AI GRATIS', 152, footerY + 57);
 
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '600 22px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('Scan QR atau klik link di bio Story buat tes bareng!', 140, footerY + 175);
+  // Highlighted URL Pill Box
+  ctx.fillStyle = 'rgba(6, 182, 212, 0.22)';
+  ctx.beginPath();
+  ctx.roundRect(130, footerY + 86, 645, 58, 16);
+  ctx.fill();
+  ctx.strokeStyle = '#22d3ee';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '900 22px "JetBrains Mono", monospace';
+  ctx.fillText('🌐 https://interview-ai-wheat-one.vercel.app', 148, footerY + 123);
+
+  ctx.fillStyle = '#bae6fd';
+  ctx.font = '700 21px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('⚡ Scan QR atau klik link buat tes mental interview bareng!', 135, footerY + 188);
 
   // Stylized QR Code
   const qrX = width - 275;

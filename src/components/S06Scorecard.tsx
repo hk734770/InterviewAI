@@ -708,23 +708,45 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
                 </div>
               </div>
 
-              {/* Story Footer & QR Box */}
-              <div className="relative z-10 p-2.5 rounded-xl bg-slate-950/90 border border-slate-800 flex items-center justify-between gap-2 shadow-lg">
-                <div className="min-w-0 flex-1">
-                  <span className="text-[8.5px] font-black text-emerald-400 uppercase tracking-wide block leading-none">
-                    🔥 COBA SIMULASI INTERVIEW AI GRATIS
-                  </span>
-                  <div className="text-[9.5px] font-mono font-bold text-cyan-300 tracking-tight whitespace-nowrap mt-0.5">
-                    https://interview-ai-wheat-one.vercel.app
-                  </div>
-                  <span className="text-[8px] text-slate-400 block leading-none mt-0.5">
-                    Scan QR atau klik link di bio Story buat tes bareng!
-                  </span>
-                </div>
+              {/* Story Footer & QR Box - Eye Catching Neon CTA */}
+              <div className="relative z-10 rounded-2xl p-[1.5px] bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 shadow-[0_0_25px_rgba(6,182,212,0.35)]">
+                <div className="p-2.5 rounded-[14px] bg-gradient-to-br from-slate-950 via-[#071a26] to-[#0b1528] flex items-center justify-between gap-2.5 relative overflow-hidden">
+                  {/* Subtle ambient light sweep */}
+                  <div className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-cyan-500/15 blur-xl pointer-events-none" />
 
-                {/* Mini Crisp QR Code */}
-                <div className="p-1 bg-white rounded-md shrink-0">
-                  <QrCode className="w-8 h-8 text-slate-950" />
+                  <div className="min-w-0 flex-1 space-y-1">
+                    {/* Eye-Catching Header Badge */}
+                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-emerald-500/25 to-teal-500/20 border border-emerald-400/50 shadow-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                      <span className="text-[8.5px] font-black bg-gradient-to-r from-emerald-300 via-teal-200 to-cyan-300 bg-clip-text text-transparent uppercase tracking-wider leading-none">
+                        🔥 COBA SIMULASI INTERVIEW AI GRATIS
+                      </span>
+                    </div>
+
+                    {/* Highlighted URL Pill */}
+                    <a
+                      href="https://interview-ai-wheat-one.vercel.app"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block px-2 py-1 rounded-lg bg-gradient-to-r from-cyan-500/25 via-blue-600/25 to-indigo-500/25 border border-cyan-400/60 shadow-[0_0_12px_rgba(34,211,238,0.25)] hover:border-cyan-300 transition-all"
+                    >
+                      <span className="text-[9.5px] font-mono font-black text-white drop-shadow-[0_1px_4px_rgba(34,211,238,0.6)] tracking-tight whitespace-nowrap block">
+                        🌐 https://interview-ai-wheat-one.vercel.app
+                      </span>
+                    </a>
+
+                    <span className="text-[8px] text-cyan-200/80 font-medium block leading-none pl-0.5">
+                      ⚡ Scan QR atau klik link buat tes mental interview bareng!
+                    </span>
+                  </div>
+
+                  {/* Mini Crisp QR Code with Neon Frame */}
+                  <div className="flex flex-col items-center shrink-0 bg-gradient-to-b from-white to-cyan-50 p-1.5 rounded-xl shadow-[0_0_15px_rgba(255,255,255,0.25)] border-2 border-cyan-300">
+                    <QrCode className="w-8 h-8 text-slate-950" />
+                    <span className="text-[6.5px] font-black font-mono text-slate-900 tracking-tighter uppercase mt-0.5 leading-none">
+                      SCAN GRATIS
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
