@@ -510,7 +510,7 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
         {/* Left Column: 9:16 Vertical Phone Canvas with Quick Interactive Controls */}
         <div className="lg:col-span-5 flex flex-col items-center">
           {/* Quick Interactive Sticker Bar directly on top of the phone card */}
-          <div className="w-full max-w-[360px] p-2.5 rounded-2xl bg-slate-900/95 border border-slate-800 mb-2.5 space-y-2 shadow-lg">
+          <div className="w-full max-w-[420px] p-2.5 rounded-2xl bg-slate-900/95 border border-slate-800 mb-2.5 space-y-2 shadow-lg">
             <div className="flex items-center justify-between text-xs font-bold">
               <span className="flex items-center gap-1.5 text-rose-400">
                 <Flame className="w-3.5 h-3.5" />
@@ -546,7 +546,7 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
             </div>
           </div>
 
-          <div className="w-full max-w-[360px] flex items-center justify-between text-xs font-mono text-slate-400 mb-2 px-2">
+          <div className="w-full max-w-[420px] flex items-center justify-between text-xs font-mono text-slate-400 mb-2 px-2">
             <span className="flex items-center gap-1.5 font-bold text-cyan-400">
               <Smartphone className="w-3.5 h-3.5" />
               Format Story IG / WA (9:16 HD)
@@ -555,7 +555,7 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
           </div>
 
           {/* Phone Frame Mockup Container */}
-          <div className="relative w-full max-w-[360px] aspect-[9/16] rounded-[38px] p-3 bg-slate-950 border-4 border-slate-800 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] overflow-hidden">
+          <div className="relative w-full max-w-[420px] aspect-[9/16] rounded-[38px] p-3 bg-slate-950 border-4 border-slate-800 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] overflow-hidden">
             {/* Phone Speaker Notch */}
             <div className="absolute top-4 left-1/2 -translate-x-1/2 w-28 h-4 rounded-full bg-slate-900 z-40 border border-slate-800 flex items-center justify-center">
               <div className="w-10 h-1 rounded-full bg-slate-800" />
@@ -710,11 +710,11 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
 
               {/* Story Footer & QR Box */}
               <div className="relative z-10 p-2.5 rounded-xl bg-slate-950/90 border border-slate-800 flex items-center justify-between gap-2 shadow-lg">
-                <div className="overflow-hidden">
+                <div className="min-w-0 flex-1">
                   <span className="text-[8.5px] font-black text-emerald-400 uppercase tracking-wide block leading-none">
                     🔥 COBA SIMULASI INTERVIEW AI GRATIS
                   </span>
-                  <div className="text-[10px] font-mono font-bold text-cyan-300 truncate mt-0.5">
+                  <div className="text-[9.5px] font-mono font-bold text-cyan-300 tracking-tight whitespace-nowrap mt-0.5">
                     https://interview-ai-wheat-one.vercel.app
                   </div>
                   <span className="text-[8px] text-slate-400 block leading-none mt-0.5">
@@ -733,7 +733,7 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
           {/* Big Playful Share Button right below Phone Mockup */}
           <button
             onClick={handleShare}
-            className="w-full max-w-[360px] mt-3.5 group relative flex items-center justify-between gap-3 py-4 px-4.5 rounded-2xl bg-gradient-to-r from-amber-400 via-rose-500 to-pink-500 hover:from-amber-300 hover:via-rose-400 hover:to-pink-400 text-white font-black shadow-2xl shadow-rose-500/35 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border-2 border-white/90 ring-4 ring-pink-500/25"
+            className="w-full max-w-[420px] mt-3.5 group relative flex items-center justify-between gap-3 py-4 px-4.5 rounded-2xl bg-gradient-to-r from-amber-400 via-rose-500 to-pink-500 hover:from-amber-300 hover:via-rose-400 hover:to-pink-400 text-white font-black shadow-2xl shadow-rose-500/35 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border-2 border-white/90 ring-4 ring-pink-500/25"
           >
             <div className="flex items-center gap-3">
               <span className="text-3xl group-hover:rotate-12 group-hover:scale-125 transition-transform animate-bounce">🚀</span>

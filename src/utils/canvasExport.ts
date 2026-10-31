@@ -294,7 +294,7 @@ export function renderScorecardToCanvas(data: ScorecardData): HTMLCanvasElement 
   ctx.fillText('🔥 COBA SIMULASI INTERVIEW AI GRATIS', 140, footerY + 68);
 
   ctx.fillStyle = '#38bdf8';
-  ctx.font = '800 28px "JetBrains Mono", monospace';
+  ctx.font = '800 24px "JetBrains Mono", monospace';
   ctx.fillText('https://interview-ai-wheat-one.vercel.app', 140, footerY + 124);
 
   ctx.fillStyle = '#94a3b8';
