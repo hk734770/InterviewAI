@@ -177,7 +177,7 @@ export const S01Setup: React.FC<S01SetupProps> = ({
               <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">
                 1
               </span>
-              <span>Siapa Nama ?</span>
+              <span>Siapa Namamu ?</span>
             </label>
             <span className="text-xs font-mono text-slate-400">Wajib diisi</span>
           </div>
