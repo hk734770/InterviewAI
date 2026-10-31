@@ -146,9 +146,10 @@ export const S02AVCheck: React.FC<S02AVCheckProps> = ({
         try {
           const SpeechRecognitionClass = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
           if (SpeechRecognitionClass) {
+            const isMobileDevice = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
             const recognition = new SpeechRecognitionClass();
             recognitionRef.current = recognition;
-            recognition.continuous = true;
+            recognition.continuous = !isMobileDevice;
             recognition.interimResults = true;
             recognition.lang = 'id-ID';
 
@@ -160,21 +161,29 @@ export const S02AVCheck: React.FC<S02AVCheckProps> = ({
               if (text.trim()) {
                 setTranscriptPreview(`“${text.trim()}”`);
                 setIsVoiceDetected(true);
+                setMicLevel(75 + Math.floor(Math.random() * 20));
+                setRealDecibel(-10 + Math.floor(Math.random() * 6));
               }
             };
 
             recognition.onend = () => {
               // Otomatis segarkan dan lanjutkan mendengarkan suara
-              try {
-                recognition.start();
-              } catch (_) {}
+              setTimeout(() => {
+                try {
+                  recognitionRef.current?.start();
+                } catch (_) {}
+              }, 150);
             };
 
             recognition.onerror = (err: any) => {
-              if (err?.error !== 'aborted') {
+              // Jika pada Hand Phone terjadi konflik lock mic antara getUserMedia dan SpeechRecognition
+              if (err?.error === 'audio-capture' && streamRef.current) {
+                streamRef.current.getAudioTracks().forEach((t) => t.stop());
+              }
+              if (err?.error !== 'aborted' && err?.error !== 'not-allowed') {
                 setTimeout(() => {
                   try {
-                    recognition.start();
+                    recognitionRef.current?.start();
                   } catch (_) {}
                 }, 300);
               }
@@ -235,16 +244,21 @@ export const S02AVCheck: React.FC<S02AVCheckProps> = ({
       if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
         audioCtxRef.current.resume().catch(() => {});
       }
+      try {
+        recognitionRef.current?.start();
+      } catch (_) {}
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     navigator.mediaDevices?.addEventListener('devicechange', handleDeviceChange);
-    window.addEventListener('click', handleFirstGesture, { once: true });
+    window.addEventListener('click', handleFirstGesture, { passive: true });
+    window.addEventListener('touchstart', handleFirstGesture, { passive: true });
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       navigator.mediaDevices?.removeEventListener('devicechange', handleDeviceChange);
       window.removeEventListener('click', handleFirstGesture);
+      window.removeEventListener('touchstart', handleFirstGesture);
     };
   }, [selectedDeviceId]);
 

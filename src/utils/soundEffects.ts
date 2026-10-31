@@ -55,8 +55,8 @@ export function playSpeakerVoiceTest(onEnd?: () => void): void {
   playTestChime();
 
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-    setTimeout(() => {
+    try {
+      window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance('Halo! Output audio speaker Anda berfungsi dengan baik dan terdengar jernih.');
       utterance.lang = 'id-ID';
       utterance.rate = 1.0;
@@ -67,8 +67,11 @@ export function playSpeakerVoiceTest(onEnd?: () => void): void {
       utterance.onerror = () => {
         if (onEnd) onEnd();
       };
+      // Panggil langsung di dalam user gesture agar tidak diblokir di browser HP (iOS Safari / Android Chrome)
       window.speechSynthesis.speak(utterance);
-    }, 400);
+    } catch {
+      if (onEnd) setTimeout(onEnd, 1500);
+    }
   } else {
     if (onEnd) {
       setTimeout(onEnd, 1500);

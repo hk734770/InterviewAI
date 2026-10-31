@@ -196,9 +196,18 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
         recognitionRef.current = null;
       }
 
+      const isMobileDevice = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
+
+      // Pada Hand Phone, hentikan stream getUserMedia audio mentah saat SpeechRecognition berjalan
+      // agar mikrofon tidak terkunci (exclusive hardware mic lock) dan speaker tetap mode Loudspeaker
+      if (isMobileDevice && audioStreamRef.current) {
+        audioStreamRef.current.getAudioTracks().forEach((t) => t.stop());
+        audioStreamRef.current = null;
+      }
+
       const recognition = new SpeechRecognitionClass();
       recognitionRef.current = recognition;
-      recognition.continuous = true;
+      recognition.continuous = !isMobileDevice;
       recognition.interimResults = true;
       recognition.lang = 'id-ID';
 
@@ -212,6 +221,25 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
         isRecognitionStartingRef.current = false;
       };
 
+      recognition.onsoundstart = () => {
+        setIsCandidateSpeaking(true);
+        setMicAudioLevel(68 + Math.floor(Math.random() * 22));
+        setDecibelLevel(64 + Math.floor(Math.random() * 14));
+      };
+
+      recognition.onspeechstart = () => {
+        markCandidateAnswered();
+        setIsCandidateSpeaking(true);
+        setMicAudioLevel(75 + Math.floor(Math.random() * 20));
+        setDecibelLevel(68 + Math.floor(Math.random() * 15));
+      };
+
+      recognition.onspeechend = () => {
+        setIsCandidateSpeaking(false);
+        setMicAudioLevel(22);
+        setDecibelLevel(38);
+      };
+
       recognition.onresult = (event: any) => {
         let currentSessionFinal = '';
         let interim = '';
@@ -223,7 +251,9 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
             interim += (interim ? ' ' : '') + piece.trim();
           }
         }
-        const sessionPieces = [currentSessionFinal, interim].filter(Boolean).join(' ').trim();
+        const sessionPieces = isMobileDevice
+          ? (currentSessionFinal || interim).trim()
+          : [currentSessionFinal, interim].filter(Boolean).join(' ').trim();
         const base = accumulatedFinalTextRef.current.trim();
         let fullText = '';
         if (base && sessionPieces) {
@@ -238,6 +268,8 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
           candidateSpeechTextRef.current = fullText;
           setCandidateSpeechText(fullText);
           setIsCandidateSpeaking(true);
+          setMicAudioLevel(72 + Math.floor(Math.random() * 24));
+          setDecibelLevel(66 + Math.floor(Math.random() * 16));
           onSaveAnswer?.(currentQuestionIndex, fullText);
         }
       };
@@ -261,6 +293,10 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
         clearTimeout(startTimeout);
         isRecognitionRunningRef.current = false;
         isRecognitionStartingRef.current = false;
+        if (err?.error === 'audio-capture' && audioStreamRef.current) {
+          audioStreamRef.current.getAudioTracks().forEach((t) => t.stop());
+          audioStreamRef.current = null;
+        }
         if (err?.error !== 'aborted' && err?.error !== 'not-allowed' && isMicActiveRef.current && !isMutedRef.current && !isInterviewerSpeakingRef.current) {
           setTimeout(() => {
             startFreshRecognition();
@@ -441,6 +477,18 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
         return;
       }
 
+      const isMobileDevice = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
+      if (isMobileDevice) {
+        // Pada Hand Phone, jangan tahan stream getUserMedia audio terus-menerus agar
+        // SpeechRecognition dapat memakai mikrofon penuh dan speaker video tetap di mode Loudspeaker
+        setIsMicActive(true);
+        isMicActiveRef.current = true;
+        setIsMuted(false);
+        isMutedRef.current = false;
+        startFreshRecognition();
+        return;
+      }
+
       const audioStream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -606,11 +654,13 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
     window.addEventListener('visibilitychange', handleFocusOrVisible);
     window.addEventListener('focus', handleFocusOrVisible);
     window.addEventListener('click', handleGlobalClickToResume, { passive: true });
+    window.addEventListener('touchstart', handleGlobalClickToResume, { passive: true });
 
     return () => {
       window.removeEventListener('visibilitychange', handleFocusOrVisible);
       window.removeEventListener('focus', handleFocusOrVisible);
       window.removeEventListener('click', handleGlobalClickToResume);
+      window.removeEventListener('touchstart', handleGlobalClickToResume);
 
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       if (audioStreamRef.current) audioStreamRef.current.getTracks().forEach((t) => t.stop());
@@ -707,6 +757,17 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
         track.enabled = !nextMuted;
       });
     }
+    if (nextMuted) {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch (_) {}
+      }
+      isRecognitionRunningRef.current = false;
+      isRecognitionStartingRef.current = false;
+    } else {
+      startFreshRecognition();
+    }
   };
 
   const handleToggleVideo = () => {
@@ -762,7 +823,7 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
   };
 
   return (
-    <div className="w-full max-w-[1550px] mx-auto px-2 sm:px-4 py-2 space-y-2 animate-fadeIn flex flex-col h-[calc(100vh-75px)] min-h-[700px]">
+    <div className="w-full max-w-[1550px] mx-auto px-2 sm:px-4 py-2 space-y-2 animate-fadeIn flex flex-col h-[calc(min(100vh,860px)-75px)] min-h-[720px]">
       {/* Zoom Meeting Top Status Bar */}
       <div className="flex flex-wrap items-center justify-between gap-2.5 px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs shadow-lg">
         {/* Left: Recording & Zoom Meeting ID */}

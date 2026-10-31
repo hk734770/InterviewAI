@@ -64,9 +64,29 @@ export const PhotorealisticFemaleAvatar: React.FC<PhotorealisticFemaleAvatarProp
           onVideoPlay?.();
         })
         .catch((err) => {
-          console.warn('Autoplay with sound paused by browser:', err);
-          setIsAutoplayBlocked(true);
-          setIsVideoPlaying(false);
+          console.warn('Autoplay with sound paused by browser, starting muted fallback:', err);
+          // Pada browser HP yang membatasi autoplay bersuara, tetap jalankan video secara otomatis
+          // lalu aktifkan suara begitu pengguna menyentuh layar
+          video.muted = true;
+          video.play()
+            .then(() => {
+              setIsAutoplayBlocked(false);
+              setIsVideoPlaying(true);
+              onVideoPlay?.();
+              const unlockAudio = () => {
+                if (videoRef.current && !isMuted) {
+                  videoRef.current.muted = false;
+                }
+                window.removeEventListener('touchstart', unlockAudio);
+                window.removeEventListener('click', unlockAudio);
+              };
+              window.addEventListener('touchstart', unlockAudio, { once: true, passive: true });
+              window.addEventListener('click', unlockAudio, { once: true, passive: true });
+            })
+            .catch(() => {
+              setIsAutoplayBlocked(true);
+              setIsVideoPlaying(false);
+            });
         });
     }
   }, [effectiveSrc, replayTrigger]);
