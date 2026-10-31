@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@theme {
+  --breakpoint-sm: 1px;
+  --breakpoint-md: 1px;
+  --breakpoint-lg: 1px;
+  --breakpoint-xl: 1px;
+  --breakpoint-2xl: 1px;
+}
+
 @layer base {
   html, body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;

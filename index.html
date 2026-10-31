@@ -2,7 +2,30 @@
 <html lang="id" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=1280" />
+    <meta name="viewport" id="viewport-meta" content="width=1280, user-scalable=yes" />
+    <script>
+      (function () {
+        function applyNotebookViewport() {
+          var vp = document.getElementById('viewport-meta');
+          if (!vp) return;
+          var targetWidth = 1280;
+          var screenWidth = Math.min(window.screen.width || window.innerWidth || targetWidth, window.outerWidth || targetWidth);
+          if (screenWidth > 0 && screenWidth < targetWidth) {
+            var scale = (screenWidth / targetWidth).toFixed(4);
+            vp.setAttribute(
+              'content',
+              'width=' + targetWidth + ', initial-scale=' + scale + ', minimum-scale=' + scale + ', maximum-scale=3.0, user-scalable=yes'
+            );
+          } else {
+            vp.setAttribute('content', 'width=' + targetWidth + ', initial-scale=1.0, user-scalable=yes');
+          }
+        }
+        applyNotebookViewport();
+        window.addEventListener('orientationchange', function () {
+          setTimeout(applyNotebookViewport, 100);
+        });
+      })();
+    </script>
     <title>InterviewAI - Simulasi Interview Kerja Realistis</title>
     <meta name="description" content="Platform simulasi wawancara video call interaktif dengan AI Recruiter, diagnostik komprehensif 4 pilar STAR, dan viral scorecard 9:16 untuk media sosial." />
     <meta property="og:title" content="InterviewAI - Simulasi Interview Kerja Realistis" />
