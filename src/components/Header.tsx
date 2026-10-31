@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StepId } from '../types/interview';
-import { Bot, Radio, Share2, Check, ExternalLink, Database, Download } from 'lucide-react';
+import { Bot, Radio, Share2, Check, ExternalLink } from 'lucide-react';
 
 interface HeaderProps {
   currentStep: StepId;
@@ -85,18 +85,6 @@ export const Header: React.FC<HeaderProps> = ({ currentStep, onSelectStep }) => 
 
         {/* Right Status Zone */}
         <div className="flex items-center gap-2.5 shrink-0">
-          {/* Tombol Download File .SQL */}
-          <a
-            href="/interviewai_schema.sql"
-            download="interviewai_schema.sql"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md bg-slate-800/90 hover:bg-slate-700/90 text-cyan-300 border border-cyan-500/30 hover:border-cyan-400 active:scale-95"
-            title="Download file database .sql (PostgreSQL / MySQL Schema)"
-          >
-            <Database className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="hidden sm:inline">Download .SQL</span>
-            <span className="sm:hidden">.SQL</span>
-          </a>
-
           {/* Tombol Bagikan Link Publik */}
           <button
             onClick={handleCopyLink}
