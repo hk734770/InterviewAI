@@ -54,9 +54,29 @@ export const S02AVCheck: React.FC<S02AVCheckProps> = ({
   const animFrameRef = useRef<number | null>(null);
   const recognitionRef = useRef<any>(null);
 
-  // Inisialisasi dan hubungkan Mikrofon (Otomatis aktif saat halaman terbuka)
+  // Deteksi apakah aplikasi sedang dibuka di HandPhone / Smartphone (termasuk saat viewport 1280 aktif)
+  const isHandPhoneDevice = () => {
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent || navigator.vendor || (window as any).opera || '';
+    const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua);
+    const isCoarsePointer = typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
+    const isSmallScreen = typeof window.screen !== 'undefined' && Math.min(window.screen.width || 9999, window.screen.height || 9999) <= 900;
+    const hasTouch = 'ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 1);
+    return Boolean(isMobileUA || (hasTouch && (isCoarsePointer || isSmallScreen)));
+  };
+
+  // Inisialisasi dan hubungkan Mikrofon (Otomatis aktif saat halaman terbuka, tanpa mengeluarkan suara di HandPhone)
   const connectMicrophone = async (targetDeviceId?: string) => {
     try {
+      const onHandPhone = isHandPhoneDevice();
+
+      // Pastikan tidak ada suara SpeechSynthesis yang menyala saat di S02 AV Check
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        try {
+          window.speechSynthesis.cancel();
+        } catch (_) {}
+      }
+
       // Hentikan stream sebelumnya jika ada
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
@@ -100,7 +120,7 @@ export const S02AVCheck: React.FC<S02AVCheckProps> = ({
           console.log('Device enumeration:', devErr);
         }
 
-        // Hubungkan ke Web Audio API Analyser untuk pengukuran real-time
+        // Hubungkan ke Web Audio API Analyser untuk pengukuran real-time (Murni visual, TIDAK dihubungkan ke destination/speaker)
         const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
         if (AudioContextClass) {
           const audioCtx = new AudioContextClass();
@@ -130,6 +150,9 @@ export const S02AVCheck: React.FC<S02AVCheckProps> = ({
                 // Hitung estimasi desibel riil (-48 dB s.d. -3 dB)
                 const dB = Math.round(-48 + (mappedLevel / 100) * 45);
                 setRealDecibel(dB);
+                if (onHandPhone) {
+                  setTranscriptPreview('“Gelombang suara Anda terdeteksi dengan jelas oleh mikrofon...”');
+                }
               } else {
                 // Background ambient noise level
                 const ambientLevel = 35 + Math.floor(Math.random() * 8);
@@ -142,59 +165,58 @@ export const S02AVCheck: React.FC<S02AVCheckProps> = ({
           animFrameRef.current = requestAnimationFrame(processAudio);
         }
 
-        // Hubungkan Speech Recognition untuk transkrip uji langsung
-        try {
-          const SpeechRecognitionClass = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-          if (SpeechRecognitionClass) {
-            const isMobileDevice = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
-            const recognition = new SpeechRecognitionClass();
-            recognitionRef.current = recognition;
-            recognition.continuous = !isMobileDevice;
-            recognition.interimResults = true;
-            recognition.lang = 'id-ID';
+        // Hubungkan Speech Recognition HANYA pada Desktop/Laptop.
+        // Pada HandPhone (Android/iOS), SpeechRecognition TIDAK dijalankan di S02 AV Check
+        // agar tidak memicu bunyi sistem ("beep/ding" Google Speech Services) di HandPhone.
+        if (!onHandPhone) {
+          try {
+            const SpeechRecognitionClass = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+            if (SpeechRecognitionClass) {
+              const recognition = new SpeechRecognitionClass();
+              recognitionRef.current = recognition;
+              recognition.continuous = true;
+              recognition.interimResults = true;
+              recognition.lang = 'id-ID';
 
-            recognition.onresult = (event: any) => {
-              let text = '';
-              for (let i = event.resultIndex; i < event.results.length; ++i) {
-                text += event.results[i][0].transcript;
-              }
-              if (text.trim()) {
-                setTranscriptPreview(`“${text.trim()}”`);
-                setIsVoiceDetected(true);
-                setMicLevel(75 + Math.floor(Math.random() * 20));
-                setRealDecibel(-10 + Math.floor(Math.random() * 6));
-              }
-            };
+              recognition.onresult = (event: any) => {
+                let text = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                  text += event.results[i][0].transcript;
+                }
+                if (text.trim()) {
+                  setTranscriptPreview(`“${text.trim()}”`);
+                  setIsVoiceDetected(true);
+                  setMicLevel(75 + Math.floor(Math.random() * 20));
+                  setRealDecibel(-10 + Math.floor(Math.random() * 6));
+                }
+              };
 
-            recognition.onend = () => {
-              // Otomatis segarkan dan lanjutkan mendengarkan suara
-              setTimeout(() => {
-                try {
-                  recognitionRef.current?.start();
-                } catch (_) {}
-              }, 150);
-            };
-
-            recognition.onerror = (err: any) => {
-              // Jika pada Hand Phone terjadi konflik lock mic antara getUserMedia dan SpeechRecognition
-              if (err?.error === 'audio-capture' && streamRef.current) {
-                streamRef.current.getAudioTracks().forEach((t) => t.stop());
-              }
-              if (err?.error !== 'aborted' && err?.error !== 'not-allowed') {
+              recognition.onend = () => {
+                // Otomatis segarkan dan lanjutkan mendengarkan suara pada Desktop
                 setTimeout(() => {
                   try {
                     recognitionRef.current?.start();
                   } catch (_) {}
-                }, 300);
-              }
-            };
+                }, 150);
+              };
 
-            try {
-              recognition.start();
-            } catch (_) {}
+              recognition.onerror = (err: any) => {
+                if (err?.error !== 'aborted' && err?.error !== 'not-allowed') {
+                  setTimeout(() => {
+                    try {
+                      recognitionRef.current?.start();
+                    } catch (_) {}
+                  }, 300);
+                }
+              };
+
+              try {
+                recognition.start();
+              } catch (_) {}
+            }
+          } catch (sttErr) {
+            console.log('Speech recognition in AV check:', sttErr);
           }
-        } catch (sttErr) {
-          console.log('Speech recognition in AV check:', sttErr);
         }
       }
     } catch (err: any) {
@@ -209,6 +231,11 @@ export const S02AVCheck: React.FC<S02AVCheckProps> = ({
     connectMicrophone();
 
     return () => {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        try {
+          window.speechSynthesis.cancel();
+        } catch (_) {}
+      }
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       if (streamRef.current) streamRef.current.getTracks().forEach((t) => t.stop());
       if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') audioCtxRef.current.close().catch(() => {});
@@ -224,14 +251,18 @@ export const S02AVCheck: React.FC<S02AVCheckProps> = ({
 
   // Otomatis segarkan mikrofon saat jendela browser kembali aktif atau saat perangkat audio berganti
   useEffect(() => {
+    const onHandPhone = isHandPhoneDevice();
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
           audioCtxRef.current.resume().catch(() => {});
         }
-        try {
-          recognitionRef.current?.start();
-        } catch (_) {}
+        if (!onHandPhone) {
+          try {
+            recognitionRef.current?.start();
+          } catch (_) {}
+        }
       }
     };
 
@@ -244,9 +275,11 @@ export const S02AVCheck: React.FC<S02AVCheckProps> = ({
       if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
         audioCtxRef.current.resume().catch(() => {});
       }
-      try {
-        recognitionRef.current?.start();
-      } catch (_) {}
+      if (!onHandPhone) {
+        try {
+          recognitionRef.current?.start();
+        } catch (_) {}
+      }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -269,12 +302,25 @@ export const S02AVCheck: React.FC<S02AVCheckProps> = ({
     connectMicrophone(deviceId);
   };
 
-  // Tes output audio speaker (Nada Chime + Suara Ucapan Bahasa Indonesia)
+  // Tes output audio speaker (Pada HandPhone tidak mengeluarkan suara sesuai permintaan)
   const handleTestSpeaker = () => {
     setIsPlayingSpeakerTone(true);
     setSpeakerTestSuccess(false);
 
-    // Memutar nada dan ucapan bahasa Indonesia secara jernih
+    if (isHandPhoneDevice()) {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        try {
+          window.speechSynthesis.cancel();
+        } catch (_) {}
+      }
+      setTimeout(() => {
+        setIsPlayingSpeakerTone(false);
+        setSpeakerTestSuccess(true);
+      }, 800);
+      return;
+    }
+
+    // Memutar nada dan ucapan bahasa Indonesia secara jernih (Hanya pada Desktop/Laptop)
     playSpeakerVoiceTest(() => {
       setIsPlayingSpeakerTone(false);
       setSpeakerTestSuccess(true);
