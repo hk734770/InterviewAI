@@ -98,39 +98,43 @@ export function renderScorecardToCanvas(data: ScorecardData): HTMLCanvasElement 
   // Batch / Year Badge (Lucu & Gaul)
   ctx.fillStyle = 'rgba(16, 185, 129, 0.18)';
   ctx.beginPath();
-  ctx.roundRect(width - 340, 175, 220, 50, 25);
+  ctx.roundRect(width - 360, 175, 270, 50, 25);
   ctx.fill();
   ctx.strokeStyle = '#10b981';
   ctx.lineWidth = 2;
   ctx.stroke();
 
   ctx.fillStyle = '#10b981';
-  ctx.font = 'bold 22px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('⚡ LOLOS VERIFIKASI', width - 315, 207);
+  ctx.font = 'bold 21px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('⚡ LOLOS VERIFIKASI', width - 338, 207);
 
   // Candidate Name & Track
   ctx.fillStyle = '#ffffff';
-  ctx.font = '900 64px "Plus Jakarta Sans", sans-serif';
+  ctx.font = '900 62px "Plus Jakarta Sans", sans-serif';
   const nameText = data.candidateName || 'Johan Pratama';
-  ctx.fillText(nameText.length > 18 ? nameText.slice(0, 18) + '...' : nameText, 120, 325);
+  ctx.fillText(nameText.length > 16 ? nameText.slice(0, 16) + '...' : nameText, 120, 322);
 
-  ctx.fillStyle = '#38bdf8';
-  ctx.font = 'bold 26px "JetBrains Mono", monospace';
-  ctx.fillText(`ROLE: ${(data.jobTrack || 'ACCOUNTING').toUpperCase()} • READY TO HIRE`, 120, 375);
-
-  // Top Percentile & Tier Pill
+  // Top Percentile & Tier Pill (Sejajar dengan nama agar tidak menabrak teks ROLE di bawahnya)
   const tierText = data.tier || 'TIER S+ (GOKIL PARAH)';
+  const tierLabel = `👑 ${tierText}`;
+  ctx.font = 'bold 21px "Plus Jakarta Sans", sans-serif';
+  const measuredTierW = Math.max(270, Math.min(380, ctx.measureText(tierLabel).width + 44));
+  const tierX = width - 90 - measuredTierW;
+
   ctx.fillStyle = 'rgba(234, 179, 8, 0.2)';
   ctx.beginPath();
-  ctx.roundRect(width - 370, 325, 250, 55, 14);
+  ctx.roundRect(tierX, 276, measuredTierW, 54, 14);
   ctx.fill();
   ctx.strokeStyle = '#eab308';
   ctx.lineWidth = 2.5;
   ctx.stroke();
 
   ctx.fillStyle = '#fde047';
-  ctx.font = 'bold 22px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText(`👑 ${tierText}`, width - 355, 360);
+  ctx.fillText(tierLabel, tierX + 20, 311);
+
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = 'bold 25px "JetBrains Mono", monospace';
+  ctx.fillText(`ROLE: ${(data.jobTrack || 'ACCOUNTING').toUpperCase()} • READY TO HIRE`, 120, 376);
 
   // MAIN CARD AREA (GAYA CARD MODERN BERSUDUT BESAR)
   const cardY = 430;
@@ -221,10 +225,15 @@ export function renderScorecardToCanvas(data: ScorecardData): HTMLCanvasElement 
   ctx.lineWidth = 2.5;
   ctx.stroke();
 
-  // Persona Header
+  // Persona Header (Otomatis menyesuaikan ukuran font agar tidak melewati batas kotak)
   ctx.fillStyle = '#fbbf24';
-  ctx.font = '900 32px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText(`👑 ${data.personaTitle}`, 160, personaY + 52);
+  const personaHeaderStr = `👑 ${data.personaTitle}`;
+  ctx.font = personaHeaderStr.length > 42
+    ? '900 25px "Plus Jakarta Sans", sans-serif'
+    : personaHeaderStr.length > 34
+      ? '900 28px "Plus Jakarta Sans", sans-serif'
+      : '900 32px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText(personaHeaderStr, 160, personaY + 52);
 
   // Funny Persona Quote (Wrap text)
   ctx.fillStyle = '#e2e8f0';
@@ -566,10 +575,10 @@ export function createScorecardJPGFileSync(data: ScorecardData, includeTextHeade
 }
 
 /**
- * Ekspor Scorecard ke format PNG
+ * Ekspor Scorecard ke format PNG (Default: menyertakan Teks Evaluasi STAR + Scorecard)
  */
-export function exportScorecardToPNG(data: ScorecardData): void {
-  const canvas = renderScorecardToCanvas(data);
+export function exportScorecardToPNG(data: ScorecardData, includeTextHeader = true): void {
+  const canvas = includeTextHeader ? renderWhatsAppCompositeToCanvas(data) : renderScorecardToCanvas(data);
   const imageURL = canvas.toDataURL('image/png');
   const link = document.createElement('a');
   link.download = `Scorecard_STAR_${(data.candidateName || 'Johan').replace(/\s+/g, '_')}_${data.score || 84}.png`;
@@ -579,9 +588,9 @@ export function exportScorecardToPNG(data: ScorecardData): void {
 
 /**
  * Ekspor & unduh Scorecard dalam format JPG (JPEG)
- * Mengembalikan string DataURL format JPG
+ * Default: menyertakan Teks Evaluasi STAR + Scorecard dalam satu gambar utuh
  */
-export function exportScorecardToJPG(data: ScorecardData, includeTextHeader = false): string {
+export function exportScorecardToJPG(data: ScorecardData, includeTextHeader = true): string {
   const canvas = includeTextHeader ? renderWhatsAppCompositeToCanvas(data) : renderScorecardToCanvas(data);
   const jpgURL = canvas.toDataURL('image/jpeg', 0.95);
   const link = document.createElement('a');
@@ -592,7 +601,7 @@ export function exportScorecardToJPG(data: ScorecardData, includeTextHeader = fa
 }
 
 /**
- * Menghasilkan DataURL, Blob Scorecard JPG, File Gabungan WhatsApp (Teks + Scorecard), dan Blob PNG untuk clipboard
+ * Menghasilkan DataURL, Blob Scorecard JPG, File Gabungan (Teks Evaluasi STAR + Scorecard), dan Blob PNG untuk clipboard
  */
 export async function getScorecardJPGData(data: ScorecardData): Promise<{ 
   dataUrl: string; 
@@ -600,9 +609,10 @@ export async function getScorecardJPGData(data: ScorecardData): Promise<{
   pngBlob: Blob | null;
   waCompositeFile: File;
 }> {
-  const canvas = renderScorecardToCanvas(data);
+  const canvas = renderWhatsAppCompositeToCanvas(data);
   const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-  const waCompositeFile = createScorecardJPGFileSync(data, true);
+  const fileName = `Scorecard_STAR_${(data.candidateName || 'Johan').replace(/\s+/g, '_')}_${data.score || 84}_1080x1920.jpg`;
+  const waCompositeFile = dataUrlToFileSync(dataUrl, fileName, 'image/jpeg');
   
   const blob = await new Promise<Blob | null>((resolve) => {
     canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.95);

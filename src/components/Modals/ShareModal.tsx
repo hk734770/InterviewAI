@@ -200,16 +200,16 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     return `🌐 ${promoLink}\n👆 KLIK LINK DI ATAS UNTUK BUKA APLIKASI INTERVIEW AI 🔥\n\n${captionText || getFormattedWhatsAppMessage()}\n\n${promoLink}`;
   };
 
-  // Manual download JPG 1080x1920
+  // Manual download JPG 1080x1920 (Gabungan Teks Evaluasi STAR + Scorecard)
   const handleDownloadJPG = () => {
-    exportScorecardToJPG(activeScorecardData);
-    setFeedbackMsg('✅ File gambar Scorecard STAR format JPG resolusi tinggi (1080x1920) berhasil diunduh!');
+    exportScorecardToJPG(activeScorecardData, true);
+    setFeedbackMsg('✅ File gambar Scorecard Evaluasi STAR + Kartu Scorecard format JPG HD berhasil diunduh!');
     try {
       confetti({ particleCount: 40, spread: 50, origin: { y: 0.6 } });
     } catch {}
   };
 
-  // Salin gambar Scorecard ke Clipboard (Mendukung paste gambar langsung di WhatsApp Web / Mobile)
+  // Salin gambar Scorecard ke Clipboard (Mendukung paste gambar langsung di WhatsApp Web / Instagram / Mobile)
   const handleCopyImageToClipboard = async () => {
     if (cachedPngBlob && navigator.clipboard && typeof ClipboardItem !== 'undefined') {
       try {
@@ -217,7 +217,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
           new ClipboardItem({ 'image/png': cachedPngBlob })
         ]);
         setIsCopiedImage(true);
-        setFeedbackMsg('📋 Foto Scorecard 1080x1920 berhasil disiapkan! Foto otomatis tertempel bersama teks pesan WhatsApp tanpa perlu Ctrl+V.');
+        setFeedbackMsg('📋 Foto Scorecard Evaluasi STAR + Kartu Scorecard berhasil disiapkan! Foto siap tertempel bersama teks pesan.');
         try {
           confetti({ particleCount: 35, spread: 45, origin: { y: 0.6 } });
         } catch {}
@@ -228,52 +228,73 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       }
     }
     // Fallback: unduh file
-    exportScorecardToJPG(activeScorecardData);
+    exportScorecardToJPG(activeScorecardData, true);
     setFeedbackMsg('Gambar Scorecard berhasil diunduh ke perangkat Anda.');
     return false;
   };
 
-  // Action: Kirim ke Instagram (Mendukung klik link langsung https://interview-ai-wheat-one.vercel.app)
+  // Action: Kirim ke Instagram (Mengirimkan Scorecard Gabungan + Tautan Aktif https://interview-ai-wheat-one.vercel.app)
   const handleSendInstagram = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanIg = getCleanIgUsername();
     const igMessage = getFormattedInstagramMessage();
-    const promoLink = getPromoLink();
 
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(igMessage).catch(() => {});
-      }
-    } catch {}
-
-    // Jika di Hand Phone dan pengguna tidak mengisi username spesifik, gunakan native share sheet agar kartu + link aktif langsung terkirim ke Instagram
-    if (!cleanIg && !isDesktop && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+    // 1. Siapkan file gambar JPG gabungan (Teks Evaluasi STAR + Scorecard) secara sinkron
+    let fileToShare = cachedJpgFile;
+    if (!fileToShare) {
       try {
-        let fileToShare = cachedJpgFile;
-        if (!fileToShare) {
-          fileToShare = createScorecardJPGFileSync(activeScorecardData, true);
-          setCachedJpgFile(fileToShare);
-        }
-        const payloadWithUrl = { files: [fileToShare], text: igMessage, url: promoLink };
-        const payloadTextOnly = { files: [fileToShare], text: igMessage };
-        const sharePayload =
-          typeof navigator.canShare === 'function' && navigator.canShare(payloadWithUrl)
-            ? payloadWithUrl
-            : payloadTextOnly;
+        fileToShare = createScorecardJPGFileSync(activeScorecardData, true);
+        setCachedJpgFile(fileToShare);
+      } catch (err) {
+        console.warn('Error generating synchronous IG file to share:', err);
+      }
+    }
 
-        if (typeof navigator.canShare !== 'function' || navigator.canShare(sharePayload)) {
+    // 2. Jika di Hand Phone, gunakan native share sheet dengan { files, text } (tanpa properti url agar file gambar tidak dibuang oleh sistem)
+    if (!isDesktop && fileToShare && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      try {
+        const sharePayload = {
+          files: [fileToShare],
+          text: igMessage,
+        };
+        const canShareFiles = typeof navigator.canShare === 'function' ? navigator.canShare({ files: [fileToShare] }) : true;
+        if (canShareFiles) {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(igMessage).catch(() => {});
+          }
           await navigator.share(sharePayload);
-          setFeedbackMsg('✅ Berhasil! Scorecard & tautan aktif https://interview-ai-wheat-one.vercel.app berhasil dibagikan ke Instagram.');
+          setFeedbackMsg('✅ Berhasil! Kartu Scorecard Evaluasi STAR & tautan aktif https://interview-ai-wheat-one.vercel.app berhasil dikirimkan ke Instagram.');
+          try {
+            confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+          } catch {}
           return;
         }
       } catch (err: any) {
         if (err?.name === 'AbortError') return;
+        console.warn('Instagram share fallback:', err);
       }
     }
 
+    // 3. Fallback (atau pada Laptop/Desktop): Unduh file JPG gabungan & salin gambar ke clipboard
     exportScorecardToJPG(activeScorecardData, true);
+
+    if (cachedPngBlob && navigator.clipboard && typeof ClipboardItem !== 'undefined') {
+      try {
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': cachedPngBlob })
+        ]);
+        setIsCopiedImage(true);
+      } catch {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(igMessage).catch(() => {});
+        }
+      }
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(igMessage).catch(() => {});
+    }
+
     const targetAccount = cleanIg ? `@${cleanIg}` : 'Instagram';
-    setFeedbackMsg(`✅ Gambar JPG diunduh & teks beserta link aktif https://interview-ai-wheat-one.vercel.app disalin! Membuka ${targetAccount}...`);
+    setFeedbackMsg(`✅ Kartu Scorecard Evaluasi STAR & tautan aktif https://interview-ai-wheat-one.vercel.app telah disiapkan! Membuka ${targetAccount}...`);
 
     setTimeout(() => {
       if (cleanIg) {
@@ -282,7 +303,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       } else {
         window.open('https://www.instagram.com/', '_blank');
       }
-    }, 450);
+    }, 350);
   };
 
   // URL WhatsApp untuk Laptop vs Mobile
@@ -305,14 +326,6 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     if (e) e.preventDefault();
     const cleanPhone = getCleanWaPhone();
     const waMessage = getFormattedWhatsAppMessage();
-    const promoLink = getPromoLink();
-
-    // Salin juga teks evaluasi beserta link aktif ke clipboard secara non-blocking
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(waMessage).catch(() => {});
-      }
-    } catch {}
 
     // 1. Siapkan file gambar JPG resolusi tinggi secara SINKRON (tanpa await)
     // File ini berisi gabungan Teks Scorecard Evaluasi Interview STAR (di atas) + Kartu Visual Scorecard (di bawah)
@@ -327,24 +340,22 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       }
     }
 
-    // 2. Jika dibuka di Hand Phone (dan tidak sedang menargetkan nomor spesifik via wa.me):
-    // Langsung kirim Teks Scorecard Evaluasi Interview STAR (dengan link aktif di baris ke-1) + Scorecard!
-    if (!isDesktop && !cleanPhone && fileToShare && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+    // 2. Jika dibuka di Hand Phone:
+    // Langsung kirim Kartu Gabungan (Teks Scorecard Evaluasi Interview STAR + Scorecard) beserta caption link aktif!
+    // Catatan penting: Jangan menyertakan properti `url` atau `title` bersamaan dengan `files` agar Android/iOS
+    // tidak membuang file gambar atau teks caption saat dikirim ke WhatsApp.
+    if (!isDesktop && fileToShare && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       try {
-        const payloadWithUrl = {
-          files: [fileToShare],
-          text: waMessage,
-          url: promoLink,
-        };
-        const payloadTextOnly = {
-          files: [fileToShare],
-          text: waMessage,
-        };
-        const canShareWithUrl = typeof navigator.canShare === 'function' && navigator.canShare(payloadWithUrl);
-        const canShareFiles = canShareWithUrl || (typeof navigator.canShare === 'function' ? navigator.canShare(payloadTextOnly) : true);
+        const canShareFiles = typeof navigator.canShare === 'function' ? navigator.canShare({ files: [fileToShare] }) : true;
 
         if (canShareFiles) {
-          await navigator.share(canShareWithUrl ? payloadWithUrl : payloadTextOnly);
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(waMessage).catch(() => {});
+          }
+          await navigator.share({
+            files: [fileToShare],
+            text: waMessage,
+          });
           setFeedbackMsg('✅ Berhasil! Teks Scorecard Evaluasi Interview STAR, Kartu Scorecard, dan link aktif https://interview-ai-wheat-one.vercel.app berhasil dikirim ke WhatsApp.');
           try {
             confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
@@ -360,7 +371,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     // 3. Fallback (atau pada Laptop/Desktop): Otomatis unduh file JPG gabungan (Teks Evaluasi STAR + Scorecard) ke perangkat
     exportScorecardToJPG(activeScorecardData, true);
 
-    // 4. Salin gambar ke clipboard secara hening di latar belakang
+    // 4. Salin gambar gabungan (Teks Evaluasi STAR + Scorecard) ke clipboard agar langsung siap ditempel di WhatsApp Web
     if (cachedPngBlob && navigator.clipboard && typeof ClipboardItem !== 'undefined') {
       try {
         await navigator.clipboard.write([
@@ -372,11 +383,11 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       }
     }
 
-    // 5. Buka WhatsApp dengan teks pesan lengkap & informasi lampiran foto
+    // 5. Buka WhatsApp dengan teks pesan lengkap & link aktif https://interview-ai-wheat-one.vercel.app
     const waUrl = getWhatsAppTargetUrl(cleanPhone, waMessage);
     
     setIsDesktopGuideActive(true);
-    setFeedbackMsg('🚀 WhatsApp terbuka! Teks Scorecard Evaluasi Interview STAR dan Scorecard telah disiapkan secara otomatis.');
+    setFeedbackMsg('🚀 WhatsApp terbuka! Teks Scorecard Evaluasi Interview STAR, Kartu Scorecard, dan link aktif https://interview-ai-wheat-one.vercel.app telah disiapkan.');
 
     try {
       confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
@@ -521,29 +532,84 @@ export const ShareModal: React.FC<ShareModalProps> = ({
           </div>
         )}
 
-        {/* TAHAP 2A: FORM INSTAGRAM */}
+        {/* TAHAP 2A: FORM INSTAGRAM DENGAN LAMPIRAN SCORECARD GABUNGAN & LINK AKTIF */}
         {target === 'instagram' && (
-          <form onSubmit={handleSendInstagram} className="mt-5 space-y-4">
-            <div className="flex items-center gap-2.5 p-3 rounded-xl bg-pink-500/10 border border-pink-500/20 text-pink-300 text-xs">
-              <Instagram className="w-4 h-4 shrink-0 text-pink-400" />
-              <span>Masukkan <strong>Nama Instagram (Username)</strong> akun tujuan (atau kosongkan di HP untuk pilih langsung di aplikasi Instagram).</span>
-            </div>
+          <form onSubmit={handleSendInstagram} className="mt-4 space-y-4">
+            {/* Kartu Gambar Scorecard Gabungan (Teks Evaluasi STAR + Scorecard) untuk Instagram */}
+            <div className="p-4 rounded-2xl bg-slate-950 border-2 border-pink-500/40 flex items-center gap-3.5 shadow-lg relative overflow-hidden">
+              <div 
+                className="w-20 h-44 rounded-xl overflow-hidden bg-slate-800 border-2 border-pink-500/50 shrink-0 relative flex items-center justify-center shadow-md group"
+                title="Klik tulisan https://interview-ai-wheat-one.vercel.app pada Scorecard untuk langsung membuka aplikasi"
+              >
+                {jpgPreviewUrl ? (
+                  <>
+                    <img 
+                      src={jpgPreviewUrl} 
+                      alt="Scorecard Preview" 
+                      className="w-full h-full object-contain bg-slate-950" 
+                    />
+                    {/* Area Klik Aktif pada tulisan https://interview-ai-wheat-one.vercel.app di bagian atas Scorecard */}
+                    <a
+                      href="https://interview-ai-wheat-one.vercel.app"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute left-[6%] top-[21%] w-[88%] h-[6%] z-20 cursor-pointer hover:bg-cyan-400/20 rounded transition-colors"
+                      title="Klik https://interview-ai-wheat-one.vercel.app untuk langsung membuka aplikasi"
+                    />
+                    {/* Area Klik Aktif pada tulisan https://interview-ai-wheat-one.vercel.app di bagian bawah Scorecard */}
+                    <a
+                      href="https://interview-ai-wheat-one.vercel.app"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute left-[6%] top-[79%] w-[88%] h-[15%] z-20 cursor-pointer hover:bg-cyan-400/20 rounded transition-colors"
+                      title="Klik https://interview-ai-wheat-one.vercel.app untuk langsung membuka aplikasi"
+                    />
+                  </>
+                ) : (
+                  <ImageIcon className="w-6 h-6 text-slate-500" />
+                )}
+              </div>
 
-            {/* Box Tautan Aktif Scorecard untuk Instagram */}
-            <div className="p-3 rounded-xl bg-slate-950 border border-cyan-500/40 flex items-center justify-between gap-2">
-              <div className="min-w-0">
-                <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block">
-                  🔥 Tautan Aktif pada Scorecard (Bisa Diklik):
-                </span>
-                <a
-                  href="https://interview-ai-wheat-one.vercel.app"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs font-mono font-black text-cyan-300 hover:text-cyan-200 underline break-all inline-flex items-center gap-1 mt-0.5"
-                >
-                  <span>🌐 https://interview-ai-wheat-one.vercel.app</span>
-                  <ExternalLink className="w-3 h-3 shrink-0" />
-                </a>
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-xs sm:text-sm font-black text-white">Scorecard Evaluasi STAR + Kartu</span>
+                  <span className="px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 text-[10px] font-mono font-bold border border-pink-500/40">
+                    SIAP KIRIM IG 📸
+                  </span>
+                </div>
+                <div className="text-[11.5px] text-pink-300 mt-1 flex items-center gap-1.5 font-bold">
+                  <Paperclip className="w-3.5 h-3.5 text-pink-400 shrink-0" />
+                  <span>Teks Evaluasi STAR + Scorecard + Link Aktif:</span>
+                </div>
+                <div className="mt-1.5">
+                  <a
+                    href="https://interview-ai-wheat-one.vercel.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-cyan-500/20 border border-cyan-400/60 text-[11px] font-mono font-black text-cyan-300 hover:text-white underline transition-colors shadow-sm"
+                  >
+                    <span>🌐 https://interview-ai-wheat-one.vercel.app</span>
+                    <ExternalLink className="w-3 h-3 shrink-0" />
+                  </a>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={handleCopyImageToClipboard}
+                    className="inline-flex items-center gap-1.5 text-[11px] font-bold text-cyan-300 hover:text-white bg-cyan-950/60 border border-cyan-500/40 hover:border-cyan-400 px-3 py-1.5 rounded-xl cursor-pointer transition-colors"
+                  >
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>{isCopiedImage ? 'Scorecard Tersalin! ✨' : 'Salin Gambar Scorecard 📸'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDownloadJPG}
+                    className="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-xl cursor-pointer transition-colors"
+                  >
+                    <Download className="w-3.5 h-3.5 text-pink-400" />
+                    <span>Unduh JPG</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -558,15 +624,23 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                 </div>
                 <input
                   type="text"
-                  autoFocus
                   value={igUsername}
                   onChange={(e) => setIgUsername(e.target.value)}
                   placeholder="contoh: johan_pratama atau kosongkan untuk pilih di IG"
                   className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500"
                 />
               </div>
-              <p className="text-[11px] text-slate-500 mt-1">
-                Tautan aktif <span className="text-cyan-400 font-mono">https://interview-ai-wheat-one.vercel.app</span> otomatis disertakan agar langsung bisa diklik.
+              <p className="text-[11px] text-slate-400 mt-1">
+                Scorecard di atas beserta tautan aktif{' '}
+                <a
+                  href="https://interview-ai-wheat-one.vercel.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-cyan-400 hover:text-cyan-300 font-mono font-bold underline"
+                >
+                  https://interview-ai-wheat-one.vercel.app
+                </a>{' '}
+                otomatis dikirimkan ke Instagram.
               </p>
             </div>
 
@@ -577,13 +651,13 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               </div>
             )}
 
-            <div className="pt-2 flex flex-col sm:flex-row gap-2">
+            <div className="pt-1 flex flex-col sm:flex-row gap-2">
               <button
                 type="submit"
-                className="w-full flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-pink-600 via-rose-600 to-purple-600 hover:opacity-95 text-white font-bold text-sm shadow-lg shadow-pink-600/25 transition-all cursor-pointer"
+                className="w-full flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-pink-600 via-rose-600 to-purple-600 hover:opacity-95 text-white font-black text-sm shadow-lg shadow-pink-600/25 transition-all cursor-pointer"
               >
                 <Send className="w-4 h-4" />
-                <span>Kirim ke Instagram {getCleanIgUsername() ? `@${getCleanIgUsername()}` : '(Scorecard + Link Aktif)'}</span>
+                <span>Kirim Scorecard ke Instagram {getCleanIgUsername() ? `@${getCleanIgUsername()}` : '(Foto + Link Aktif)'}</span>
               </button>
               <button
                 type="button"
@@ -596,14 +670,14 @@ export const ShareModal: React.FC<ShareModalProps> = ({
           </form>
         )}
 
-        {/* TAHAP 2B: FORM WHATSAPP DENGAN LAMPIRAN FILE JPG RESOLUSI TINGGI (1080x1920) */}
+        {/* TAHAP 2B: FORM WHATSAPP DENGAN LAMPIRAN SCORECARD GABUNGAN & LINK AKTIF */}
         {target === 'whatsapp' && (
           <div className="mt-4 space-y-4">
-            {/* Kartu Gambar Scorecard Format JPG Resolusi Tinggi */}
+            {/* Kartu Gambar Scorecard Gabungan (Teks Evaluasi STAR + Scorecard) */}
             <div className="p-4 rounded-2xl bg-slate-950 border-2 border-emerald-500/40 flex items-center gap-3.5 shadow-lg relative overflow-hidden">
               <div 
-                className="w-16 h-28 rounded-xl overflow-hidden bg-slate-800 border-2 border-emerald-500/50 shrink-0 relative flex items-center justify-center shadow-md cursor-grab active:cursor-grabbing group"
-                title="Bisa di-drag & drop langsung ke jendela chat WhatsApp Web"
+                className="w-20 h-44 rounded-xl overflow-hidden bg-slate-800 border-2 border-emerald-500/50 shrink-0 relative flex items-center justify-center shadow-md cursor-grab active:cursor-grabbing group"
+                title="Klik tulisan https://interview-ai-wheat-one.vercel.app pada Scorecard untuk langsung membuka aplikasi"
                 draggable
                 onDragStart={(e) => {
                   if (jpgPreviewUrl) {
@@ -612,39 +686,54 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                 }}
               >
                 {jpgPreviewUrl ? (
-                  <img 
-                    src={jpgPreviewUrl} 
-                    alt="Scorecard Preview" 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform" 
-                  />
+                  <>
+                    <img 
+                      src={jpgPreviewUrl} 
+                      alt="Scorecard Preview" 
+                      className="w-full h-full object-contain bg-slate-950" 
+                    />
+                    {/* Area Klik Aktif pada tulisan https://interview-ai-wheat-one.vercel.app di bagian atas Scorecard */}
+                    <a
+                      href="https://interview-ai-wheat-one.vercel.app"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute left-[6%] top-[21%] w-[88%] h-[6%] z-20 cursor-pointer hover:bg-cyan-400/20 rounded transition-colors"
+                      title="Klik https://interview-ai-wheat-one.vercel.app untuk langsung membuka aplikasi"
+                    />
+                    {/* Area Klik Aktif pada tulisan https://interview-ai-wheat-one.vercel.app di bagian bawah Scorecard */}
+                    <a
+                      href="https://interview-ai-wheat-one.vercel.app"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute left-[6%] top-[79%] w-[88%] h-[15%] z-20 cursor-pointer hover:bg-cyan-400/20 rounded transition-colors"
+                      title="Klik https://interview-ai-wheat-one.vercel.app untuk langsung membuka aplikasi"
+                    />
+                  </>
                 ) : (
                   <ImageIcon className="w-6 h-6 text-slate-500" />
                 )}
-                <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/90 text-[8px] font-mono text-emerald-400 font-black">
-                  1080x1920
-                </span>
               </div>
 
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-xs sm:text-sm font-black text-white">File Kartu Scorecard STAR</span>
+                  <span className="text-xs sm:text-sm font-black text-white">Scorecard Evaluasi STAR + Kartu</span>
                   <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold border border-emerald-500/40">
-                    JPG HD (1080x1920)
+                    JPG HD (SIAP KIRIM)
                   </span>
                 </div>
                 <div className="text-[11.5px] text-emerald-300 mt-1 flex items-center gap-1.5 font-bold">
                   <Paperclip className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span>Otomatis Dilampirkan + Link Aktif Bisa Diklik</span>
+                  <span>Otomatis Dilampirkan + Link Aktif Bisa Diklik:</span>
                 </div>
-                <div className="mt-1">
+                <div className="mt-1.5">
                   <a
                     href="https://interview-ai-wheat-one.vercel.app"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-cyan-500/20 border border-cyan-400/50 text-[10.5px] font-mono font-black text-cyan-300 hover:text-white underline transition-colors"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-cyan-500/20 border border-cyan-400/60 text-[11px] font-mono font-black text-cyan-300 hover:text-white underline transition-colors shadow-sm"
                   >
                     <span>🌐 https://interview-ai-wheat-one.vercel.app</span>
-                    <ExternalLink className="w-2.5 h-2.5 shrink-0" />
+                    <ExternalLink className="w-3 h-3 shrink-0" />
                   </a>
                 </div>
 
@@ -653,7 +742,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                     type="button"
                     onClick={handleCopyImageToClipboard}
                     className="inline-flex items-center gap-1.5 text-[11px] font-bold text-cyan-300 hover:text-white bg-cyan-950/60 border border-cyan-500/40 hover:border-cyan-400 px-3 py-1.5 rounded-xl cursor-pointer transition-colors shadow-sm"
-                    title="Foto kartu Scorecard 1080x1920 otomatis tertempel di bawah teks pesan"
+                    title="Foto kartu Scorecard otomatis tertempel di bawah teks pesan"
                   >
                     <Check className="w-3.5 h-3.5 text-emerald-400" />
                     <span>{isCopiedImage ? 'Foto Otomatis Siap Terlampir! ✨' : 'Foto Siap Tertempel di Bawah Teks 📸'}</span>
@@ -665,7 +754,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                     className="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-xl cursor-pointer transition-colors"
                   >
                     <Download className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Unduh File JPG (1080x1920)</span>
+                    <span>Unduh File JPG</span>
                   </button>
                 </div>
               </div>

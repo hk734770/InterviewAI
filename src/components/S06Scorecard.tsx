@@ -544,6 +544,57 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
             <span className="text-emerald-400 font-semibold">1080 x 1920 Proportional</span>
           </div>
 
+          {/* Kotak Teks Scorecard Evaluasi Interview STAR (Terintegrasi di Atas Kartu Visual seperti Hasil Ekspor WhatsApp & Instagram) */}
+          <div className="w-full max-w-[420px] mb-2.5 rounded-3xl p-[2px] bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 shadow-[0_12px_35px_rgba(6,182,212,0.25)]">
+            <div className="p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#071d24] via-[#0b192a] to-[#0f172a] text-slate-100 space-y-2">
+              <div className="text-xs sm:text-sm font-black text-emerald-400 leading-tight">
+                🔥 SCORECARD EVALUASI INTERVIEW STAR ({candidateName || 'Johan'})
+              </div>
+              <div className="space-y-0.5 text-[11px] font-bold">
+                <div className="text-white">
+                  ⭐ Skor STAR: {evalResult.overallScore}/100 ({selectedPersona.tier})
+                </div>
+                <div className="text-yellow-300 truncate">
+                  👑 Judul: {selectedPersona.title}
+                </div>
+                <div className="text-rose-400">
+                  🏷️ Stiker: {activeSticker}
+                </div>
+              </div>
+
+              <div className="border-t border-slate-700/60 pt-1.5 space-y-0.5 text-[10.5px]">
+                <div className="font-black text-sky-400">📊 Rincian Nilai STAR:</div>
+                <div className="text-slate-200 font-semibold pl-1 space-y-0.5">
+                  <div>• Situation: {evalResult.situationScore}% (Gercep Parah)</div>
+                  <div>• Task: {evalResult.taskScore}% (No Drama)</div>
+                  <div>• Action: {evalResult.actionScore}% (Sat-Set Gaspol)</div>
+                  <div>• Result: {evalResult.resultScore}% (Penting Cuan)</div>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-700/60 pt-1.5 space-y-1 text-[10px]">
+                <div className="font-extrabold text-emerald-300">
+                  📸 [KARTU SCORECARD STAR (JPG HD) TERLAMPIR DI BAWAH]
+                </div>
+                <div className="font-bold text-slate-100">
+                  🎁 Mau coba uji mental interview lawan AI &amp; dapet Scorecard kayak gini?
+                </div>
+                <div className="font-bold text-sky-200">
+                  👉 Cobain Simulasi Gratis di sini (Klik Link Aktif):
+                </div>
+                <a
+                  href="https://interview-ai-wheat-one.vercel.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/25 border border-cyan-400 text-[11px] font-mono font-black text-sky-300 hover:text-white hover:bg-cyan-500/35 underline decoration-2 transition-all shadow-[0_0_15px_rgba(34,211,238,0.3)] cursor-pointer"
+                  title="Klik untuk langsung membuka aplikasi https://interview-ai-wheat-one.vercel.app"
+                >
+                  <span>🌐 https://interview-ai-wheat-one.vercel.app</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
           {/* Phone Frame Mockup Container */}
           <div className="relative w-full max-w-[420px] aspect-[9/16] rounded-[38px] p-3 bg-slate-950 border-4 border-slate-800 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] overflow-hidden">
             {/* Phone Speaker Notch */}
@@ -739,6 +790,19 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
                     </span>
                   </div>
                 </div>
+              </a>
+
+              {/* Bar Klik Link Biru di Bawah Footer (Sesuai Scorecard Gabungan) */}
+              <a
+                href="https://interview-ai-wheat-one.vercel.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative z-10 mt-1.5 block px-2.5 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500 hover:bg-emerald-500/30 transition-colors text-center cursor-pointer"
+                title="Klik untuk langsung membuka aplikasi https://interview-ai-wheat-one.vercel.app"
+              >
+                <span className="text-[8.5px] font-extrabold text-emerald-300 underline decoration-emerald-400">
+                  👇 KLIK LINK BIRU https://interview-ai-wheat-one.vercel.app DI BAWAH INI 👇
+                </span>
               </a>
             </div>
           </div>
