@@ -234,12 +234,12 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   };
 
   // Action: Kirim ke Instagram (Mengirimkan Scorecard Gabungan + Tautan Aktif https://interview-ai-wheat-one.vercel.app)
-  const handleSendInstagram = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSendInstagram = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     const cleanIg = getCleanIgUsername();
     const igMessage = getFormattedInstagramMessage();
 
-    // 1. Siapkan file gambar JPG gabungan (Teks Evaluasi STAR + Scorecard) secara sinkron
+    // 1. Siapkan file gambar JPG gabungan (Teks Evaluasi STAR + Scorecard seperti gambar S06) secara sinkron
     let fileToShare = cachedJpgFile;
     if (!fileToShare) {
       try {
@@ -250,20 +250,19 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       }
     }
 
-    // 2. Jika di Hand Phone, gunakan native share sheet dengan { files, text } (tanpa properti url agar file gambar tidak dibuang oleh sistem)
-    if (!isDesktop && fileToShare && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+    // 2. Gunakan Web Share API secara langsung (tanpa diblokir isDesktop) agar file gambar Scorecard + teks link aktif langsung terkirim ke Instagram
+    if (!cleanIg && fileToShare && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       try {
-        const sharePayload = {
-          files: [fileToShare],
-          text: igMessage,
-        };
         const canShareFiles = typeof navigator.canShare === 'function' ? navigator.canShare({ files: [fileToShare] }) : true;
         if (canShareFiles) {
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(igMessage).catch(() => {});
           }
-          await navigator.share(sharePayload);
-          setFeedbackMsg('✅ Berhasil! Kartu Scorecard Evaluasi STAR & tautan aktif https://interview-ai-wheat-one.vercel.app berhasil dikirimkan ke Instagram.');
+          await navigator.share({
+            files: [fileToShare],
+            text: igMessage,
+          });
+          setFeedbackMsg('✅ Berhasil! Kartu Scorecard & tautan aktif https://interview-ai-wheat-one.vercel.app berhasil dikirimkan ke Instagram.');
           try {
             confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
           } catch {}
@@ -275,7 +274,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       }
     }
 
-    // 3. Fallback (atau pada Laptop/Desktop): Unduh file JPG gabungan & salin gambar ke clipboard
+    // 3. Fallback: Unduh file JPG gabungan & salin gambar ke clipboard
     exportScorecardToJPG(activeScorecardData, true);
 
     if (cachedPngBlob && navigator.clipboard && typeof ClipboardItem !== 'undefined') {
@@ -294,7 +293,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     }
 
     const targetAccount = cleanIg ? `@${cleanIg}` : 'Instagram';
-    setFeedbackMsg(`✅ Kartu Scorecard Evaluasi STAR & tautan aktif https://interview-ai-wheat-one.vercel.app telah disiapkan! Membuka ${targetAccount}...`);
+    setFeedbackMsg(`✅ Kartu Scorecard & tautan aktif https://interview-ai-wheat-one.vercel.app telah disiapkan! Membuka ${targetAccount}...`);
 
     setTimeout(() => {
       if (cleanIg) {
@@ -340,11 +339,9 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       }
     }
 
-    // 2. Jika dibuka di Hand Phone:
-    // Langsung kirim Kartu Gabungan (Teks Scorecard Evaluasi Interview STAR + Scorecard) beserta caption link aktif!
-    // Catatan penting: Jangan menyertakan properti `url` atau `title` bersamaan dengan `files` agar Android/iOS
-    // tidak membuang file gambar atau teks caption saat dikirim ke WhatsApp.
-    if (!isDesktop && fileToShare && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+    // 2. Gunakan Web Share API secara langsung (tanpa diblokir isDesktop) agar Kartu Scorecard + Teks Evaluasi STAR
+    // beserta caption link aktif langsung terkirim ke WhatsApp!
+    if (!cleanPhone && fileToShare && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       try {
         const canShareFiles = typeof navigator.canShare === 'function' ? navigator.canShare({ files: [fileToShare] }) : true;
 
@@ -368,7 +365,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       }
     }
 
-    // 3. Fallback (atau pada Laptop/Desktop): Otomatis unduh file JPG gabungan (Teks Evaluasi STAR + Scorecard) ke perangkat
+    // 3. Fallback: Otomatis unduh file JPG gabungan (Teks Evaluasi STAR + Scorecard) ke perangkat
     exportScorecardToJPG(activeScorecardData, true);
 
     // 4. Salin gambar gabungan (Teks Evaluasi STAR + Scorecard) ke clipboard agar langsung siap ditempel di WhatsApp Web
@@ -456,17 +453,18 @@ export const ShareModal: React.FC<ShareModalProps> = ({
 
         {/* TAHAP 1: PILIHAN UTAMA INSTAGRAM ATAU WHATSAPP */}
         {target === 'select' && (
-          <div className="mt-5 space-y-3.5">
+          <div className="mt-4 space-y-3.5">
             <p className="text-xs text-slate-300 leading-relaxed">
-              Pilih tujuan untuk membagikan kartu hasil evaluasi wawancara milik <strong className="text-white">{candidateName}</strong>:
+              Pilih tujuan untuk langsung mengirimkan <strong>Scorecard</strong> milik <strong className="text-white">{candidateName}</strong> beserta tautan aktif:
             </p>
 
-            {/* Pilihan 1: WhatsApp (Dengan Lampiran File Scorecard JPG Resolusi Tinggi 1080x1920) */}
+            {/* Pilihan 1: WhatsApp (Langsung Kirim Scorecard + Teks Evaluasi STAR saat diklik) */}
             <button
               onClick={() => {
                 setTarget('whatsapp');
                 setFeedbackMsg(null);
                 setIsDesktopGuideActive(false);
+                handleSendWhatsApp();
               }}
               className="w-full flex items-center justify-between p-4 sm:p-4.5 rounded-2xl bg-gradient-to-r from-emerald-950/60 via-teal-950/50 to-slate-900 border-2 border-emerald-500/60 hover:border-emerald-400 transition-all group hover:scale-[1.01] active:scale-[0.99] text-left shadow-xl shadow-emerald-950/50 cursor-pointer ring-2 ring-emerald-500/20"
             >
@@ -491,12 +489,13 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               </span>
             </button>
 
-            {/* Pilihan 2: Instagram */}
+            {/* Pilihan 2: Instagram (Langsung Kirim Scorecard + Teks saat diklik) */}
             <button
               onClick={() => {
                 setTarget('instagram');
                 setFeedbackMsg(null);
                 setIsDesktopGuideActive(false);
+                handleSendInstagram();
               }}
               className="w-full flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-pink-950/40 via-purple-950/30 to-slate-900/60 border border-pink-500/30 hover:border-pink-500/60 transition-all group hover:scale-[1.01] active:scale-[0.99] text-left cursor-pointer"
             >
@@ -505,11 +504,14 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                   <Instagram className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-white group-hover:text-pink-300 transition-colors">
-                    Bagikan ke Instagram Story / DM
+                  <div className="text-sm font-bold text-white group-hover:text-pink-300 transition-colors flex flex-wrap items-center gap-2">
+                    <span>Bagikan ke Instagram Story / DM</span>
+                    <span className="text-[10px] bg-pink-500/20 text-pink-300 border border-pink-500/40 px-2 py-0.5 rounded-full font-mono font-bold">
+                      OTOMATIS LAMPIRKAN SCORECARD 📸
+                    </span>
                   </div>
                   <div className="text-xs text-slate-400 mt-0.5">
-                    Kirim ke akun Instagram teman atau HRD dengan format Story 9:16
+                    Kirim Scorecard (JPG 1080x1920) &amp; link aktif ke Instagram Story atau DM
                   </div>
                 </div>
               </div>

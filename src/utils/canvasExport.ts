@@ -9,6 +9,8 @@ export interface ScorecardData {
   score: number;
   personaTitle: string;
   personaQuote: string;
+  personaEmoji?: string;
+  verdict?: string;
   catComment?: string;
   sticker?: string;
   tier?: string;
@@ -18,6 +20,280 @@ export interface ScorecardData {
   result: number;
   vibeTemplate: 'neon' | 'midnight' | 'sunset';
   showSafeZones?: boolean;
+}
+
+/**
+ * Menggambar maskot kucing biru berdasi merah & berkacamata yang memegang clipboard STAR
+ * persis seperti komponen MascotCat pada tampilan S06Scorecard
+ */
+function drawMascotCatOnCanvas(ctx: CanvasRenderingContext2D, centerX: number, centerY: number, scale = 1.15) {
+  ctx.save();
+  ctx.translate(centerX - 100 * scale, centerY - 100 * scale);
+  ctx.scale(scale, scale);
+
+  // Outer Aura
+  const aura = ctx.createRadialGradient(100, 100, 10, 100, 100, 95);
+  aura.addColorStop(0, 'rgba(59, 130, 246, 0.38)');
+  aura.addColorStop(0.6, 'rgba(139, 92, 246, 0.18)');
+  aura.addColorStop(1, 'rgba(30, 27, 75, 0)');
+  ctx.fillStyle = aura;
+  ctx.beginPath();
+  ctx.arc(100, 100, 95, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Confetti Particles
+  const confettiItems = [
+    { x: 25, y: 45, w: 6, h: 4, rot: 0.43, color: '#f43f5e' },
+    { x: 165, y: 35, w: 5, h: 7, rot: -0.26, color: '#fbbf24' },
+    { x: 180, y: 85, w: 4, h: 6, rot: 0.7, color: '#38bdf8' },
+    { x: 20, y: 125, w: 7, h: 4, rot: -0.52, color: '#a855f7' },
+    { x: 40, y: 20, w: 5, h: 5, rot: 0.21, color: '#10b981' },
+  ];
+  confettiItems.forEach((c) => {
+    ctx.save();
+    ctx.translate(c.x, c.y);
+    ctx.rotate(c.rot);
+    ctx.fillStyle = c.color;
+    ctx.fillRect(0, 0, c.w, c.h);
+    ctx.restore();
+  });
+
+  const furGrad = ctx.createLinearGradient(40, 40, 160, 180);
+  furGrad.addColorStop(0, '#93c5fd');
+  furGrad.addColorStop(0.5, '#60a5fa');
+  furGrad.addColorStop(1, '#3b82f6');
+
+  // Left Ear
+  ctx.fillStyle = furGrad;
+  ctx.beginPath();
+  ctx.moveTo(50, 45);
+  ctx.lineTo(78, 82);
+  ctx.lineTo(42, 78);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = 'rgba(244, 114, 182, 0.85)';
+  ctx.beginPath();
+  ctx.moveTo(52, 50);
+  ctx.lineTo(72, 78);
+  ctx.lineTo(46, 75);
+  ctx.closePath();
+  ctx.fill();
+
+  // Right Ear
+  ctx.fillStyle = furGrad;
+  ctx.beginPath();
+  ctx.moveTo(150, 45);
+  ctx.lineTo(158, 78);
+  ctx.lineTo(122, 82);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = 'rgba(244, 114, 182, 0.85)';
+  ctx.beginPath();
+  ctx.moveTo(148, 50);
+  ctx.lineTo(154, 75);
+  ctx.lineTo(128, 78);
+  ctx.closePath();
+  ctx.fill();
+
+  // Tail
+  ctx.strokeStyle = '#60a5fa';
+  ctx.lineWidth = 10;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(140, 150);
+  ctx.quadraticCurveTo(182, 145, 172, 120);
+  ctx.stroke();
+
+  // Body
+  ctx.fillStyle = furGrad;
+  ctx.beginPath();
+  ctx.ellipse(100, 140, 46, 42, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Belly
+  const bellyGrad = ctx.createLinearGradient(100, 114, 100, 170);
+  bellyGrad.addColorStop(0, '#f1f5f9');
+  bellyGrad.addColorStop(1, '#cbd5e1');
+  ctx.fillStyle = bellyGrad;
+  ctx.beginPath();
+  ctx.ellipse(100, 142, 30, 28, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Feet
+  ctx.fillStyle = furGrad;
+  ctx.beginPath();
+  ctx.ellipse(80, 176, 14, 10, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(120, 176, 14, 10, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Cat Head
+  ctx.fillStyle = furGrad;
+  ctx.beginPath();
+  ctx.arc(100, 95, 48, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Soft Cheeks Blush
+  ctx.fillStyle = 'rgba(251, 113, 133, 0.55)';
+  ctx.beginPath();
+  ctx.arc(68, 105, 9, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(132, 105, 9, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Big Expressive Eyes
+  ctx.fillStyle = '#312e81';
+  ctx.beginPath();
+  ctx.ellipse(78, 94, 10, 13, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(122, 94, 10, 13, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Eye Highlights
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(75, 89, 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(81, 98, 2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(119, 89, 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(125, 98, 2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Glasses Wireframe (Golden)
+  ctx.strokeStyle = '#d97706';
+  ctx.lineWidth = 3.5;
+  ctx.beginPath();
+  ctx.arc(78, 94, 19, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(122, 94, 19, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(97, 92);
+  ctx.quadraticCurveTo(100, 89, 103, 92);
+  ctx.stroke();
+
+  // Cute Pink Nose & Smile
+  ctx.fillStyle = '#f43f5e';
+  ctx.beginPath();
+  ctx.moveTo(97, 103);
+  ctx.lineTo(103, 103);
+  ctx.lineTo(100, 107);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = '#e11d48';
+  ctx.beginPath();
+  ctx.arc(100, 109, 4.5, 0, Math.PI);
+  ctx.fill();
+
+  // Collar & Red Striped Tie
+  ctx.fillStyle = '#f8fafc';
+  ctx.beginPath();
+  ctx.moveTo(88, 126);
+  ctx.lineTo(97, 133);
+  ctx.lineTo(100, 128);
+  ctx.lineTo(103, 133);
+  ctx.lineTo(112, 126);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = '#dc2626';
+  ctx.beginPath();
+  ctx.moveTo(96, 128);
+  ctx.lineTo(104, 128);
+  ctx.lineTo(108, 162);
+  ctx.lineTo(100, 170);
+  ctx.lineTo(92, 162);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 2.8;
+  ctx.beginPath();
+  ctx.moveTo(95, 136);
+  ctx.lineTo(105, 142);
+  ctx.moveTo(94, 147);
+  ctx.lineTo(106, 153);
+  ctx.stroke();
+
+  // Waving Left Paw
+  ctx.save();
+  ctx.translate(44, 115);
+  ctx.rotate(-0.43);
+  ctx.fillStyle = furGrad;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 14, 12, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#38bdf8';
+  ctx.beginPath();
+  ctx.ellipse(0, -1, 7, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Right Paw Holding Glowing Clipboard
+  ctx.save();
+  ctx.translate(115, 110);
+  ctx.rotate(-0.17);
+  ctx.fillStyle = '#0284c7';
+  ctx.strokeStyle = '#7dd3fc';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.roundRect(0, 0, 34, 46, 4);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = '#f8fafc';
+  ctx.beginPath();
+  ctx.roundRect(3, 6, 28, 36, 2);
+  ctx.fill();
+
+  // Gold Star on Clipboard
+  ctx.fillStyle = '#facc15';
+  ctx.beginPath();
+  ctx.arc(17, 3, 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Checklist lines
+  ctx.strokeStyle = '#10b981';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(6, 14);
+  ctx.lineTo(9, 17);
+  ctx.lineTo(14, 11);
+  ctx.moveTo(6, 23);
+  ctx.lineTo(9, 26);
+  ctx.lineTo(14, 20);
+  ctx.stroke();
+
+  ctx.strokeStyle = '#94a3b8';
+  ctx.beginPath();
+  ctx.moveTo(17, 14);
+  ctx.lineTo(27, 14);
+  ctx.moveTo(17, 23);
+  ctx.lineTo(27, 23);
+  ctx.moveTo(17, 31);
+  ctx.lineTo(26, 31);
+  ctx.stroke();
+  ctx.restore();
+
+  // Paw holding clipboard
+  ctx.fillStyle = furGrad;
+  ctx.beginPath();
+  ctx.arc(132, 144, 10, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
 }
 
 export function renderScorecardToCanvas(data: ScorecardData): HTMLCanvasElement {
@@ -30,276 +306,331 @@ export function renderScorecardToCanvas(data: ScorecardData): HTMLCanvasElement 
   const ctx = canvas.getContext('2d');
   if (!ctx) return canvas;
 
-  // Background gradient depending on Vibe Template
-  let bgGrad = ctx.createLinearGradient(0, 0, width, height);
-  if (data.vibeTemplate === 'neon') {
-    // Senoparty Neon
-    bgGrad = ctx.createLinearGradient(0, 0, width, height);
-    bgGrad.addColorStop(0, '#090d16');
-    bgGrad.addColorStop(0.35, '#0a1a2e');
-    bgGrad.addColorStop(0.7, '#071524');
-    bgGrad.addColorStop(1, '#050a12');
-  } else if (data.vibeTemplate === 'midnight') {
-    // Drip Boba Pastel / Violet
-    bgGrad = ctx.createLinearGradient(0, 0, width, height);
-    bgGrad.addColorStop(0, '#100b1a');
-    bgGrad.addColorStop(0.35, '#1e1133');
-    bgGrad.addColorStop(0.7, '#130924');
-    bgGrad.addColorStop(1, '#090512');
-  } else {
-    // Menyala Abangkuh (Fire Sunset)
-    bgGrad = ctx.createLinearGradient(0, 0, width, height);
-    bgGrad.addColorStop(0, '#1a090a');
-    bgGrad.addColorStop(0.35, '#2e1215');
-    bgGrad.addColorStop(0.7, '#240d12');
-    bgGrad.addColorStop(1, '#0e0406');
-  }
-
-  ctx.fillStyle = bgGrad;
+  // Outer Phone Frame Background (#020617)
+  ctx.fillStyle = '#020617';
   ctx.fillRect(0, 0, width, height);
 
-  // Vibrant Ambient Neon Blobs in background
-  const blob1 = ctx.createRadialGradient(540, 500, 80, 540, 500, 650);
+  // Outer Phone Frame Border
+  ctx.strokeStyle = '#1e293b';
+  ctx.lineWidth = 10;
+  ctx.beginPath();
+  ctx.roundRect(14, 14, width - 28, height - 28, 86);
+  ctx.stroke();
+
+  // Inner Story Screen Container
+  const screenX = 36;
+  const screenY = 36;
+  const screenW = width - 72;
+  const screenH = height - 72;
+
+  let bgGrad = ctx.createLinearGradient(0, screenY, 0, screenY + screenH);
   if (data.vibeTemplate === 'neon') {
-    blob1.addColorStop(0, 'rgba(6, 182, 212, 0.35)');
-    blob1.addColorStop(0.5, 'rgba(16, 185, 129, 0.15)');
+    bgGrad.addColorStop(0, '#090d16');
+    bgGrad.addColorStop(0.5, '#0d1e33');
+    bgGrad.addColorStop(1, '#07111e');
+  } else if (data.vibeTemplate === 'midnight') {
+    bgGrad.addColorStop(0, '#100a1c');
+    bgGrad.addColorStop(0.5, '#1a0f30');
+    bgGrad.addColorStop(1, '#0a0614');
+  } else {
+    bgGrad.addColorStop(0, '#18090a');
+    bgGrad.addColorStop(0.5, '#2a1014');
+    bgGrad.addColorStop(1, '#0d0507');
+  }
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect(screenX, screenY, screenW, screenH, 68);
+  ctx.clip();
+
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(screenX, screenY, screenW, screenH);
+
+  // Vibrant Ambient Glow Blob
+  const blob1 = ctx.createRadialGradient(540, 560, 60, 540, 560, 560);
+  if (data.vibeTemplate === 'neon') {
+    blob1.addColorStop(0, 'rgba(6, 182, 212, 0.28)');
+    blob1.addColorStop(0.5, 'rgba(16, 185, 129, 0.14)');
     blob1.addColorStop(1, 'rgba(0, 0, 0, 0)');
   } else if (data.vibeTemplate === 'midnight') {
-    blob1.addColorStop(0, 'rgba(168, 85, 247, 0.35)');
-    blob1.addColorStop(0.5, 'rgba(236, 72, 153, 0.15)');
+    blob1.addColorStop(0, 'rgba(168, 85, 247, 0.3)');
+    blob1.addColorStop(0.5, 'rgba(236, 72, 153, 0.14)');
     blob1.addColorStop(1, 'rgba(0, 0, 0, 0)');
   } else {
-    blob1.addColorStop(0, 'rgba(249, 115, 22, 0.4)');
-    blob1.addColorStop(0.5, 'rgba(239, 68, 68, 0.18)');
+    blob1.addColorStop(0, 'rgba(249, 115, 22, 0.32)');
+    blob1.addColorStop(0.5, 'rgba(239, 68, 68, 0.16)');
     blob1.addColorStop(1, 'rgba(0, 0, 0, 0)');
   }
   ctx.fillStyle = blob1;
-  ctx.fillRect(0, 0, width, height);
+  ctx.fillRect(screenX, screenY, screenW, screenH);
+  ctx.restore();
 
-  // Decorative Playful Sparkles and Dot Patterns
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.07)';
-  for (let x = 60; x < width; x += 60) {
-    for (let y = 80; y < height; y += 60) {
-      ctx.beginPath();
-      ctx.arc(x, y, 1.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
+  // Inner Screen Border
+  ctx.strokeStyle = data.vibeTemplate === 'sunset' ? 'rgba(245, 158, 11, 0.5)' : data.vibeTemplate === 'midnight' ? 'rgba(168, 85, 247, 0.5)' : 'rgba(6, 182, 212, 0.5)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.roundRect(screenX, screenY, screenW, screenH, 68);
+  ctx.stroke();
 
-  // Header Zone: App Tag & Verified Simulation
-  ctx.fillStyle = '#38bdf8';
-  ctx.font = '900 34px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('INTERVIEWAI', 120, 210);
+  // Phone Speaker Notch at Top Center
+  ctx.fillStyle = '#0f172a';
+  ctx.strokeStyle = '#1e293b';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.roundRect(width / 2 - 140, 42, 280, 38, 19);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = '#1e293b';
+  ctx.beginPath();
+  ctx.roundRect(width / 2 - 50, 56, 100, 10, 5);
+  ctx.fill();
+
+  // Header Row 1: INTERVIEWAI • GEN-Z EDITION & LOLOS VERIFIKASI
+  ctx.fillStyle = '#22d3ee';
+  ctx.font = '900 26px "JetBrains Mono", monospace';
+  ctx.fillText('INTERVIEWAI', 84, 152);
 
   ctx.fillStyle = '#94a3b8';
-  ctx.font = '700 22px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('• GEN-Z STAR SCORECARD', 380, 210);
+  ctx.font = '600 24px "JetBrains Mono", monospace';
+  ctx.fillText('• GEN-Z EDITION', 280, 152);
 
-  // Batch / Year Badge (Lucu & Gaul)
-  ctx.fillStyle = 'rgba(16, 185, 129, 0.18)';
+  // Green Badge: ● LOLOS VERIFIKASI ⚡
+  ctx.fillStyle = 'rgba(16, 185, 129, 0.14)';
   ctx.beginPath();
-  ctx.roundRect(width - 360, 175, 270, 50, 25);
+  ctx.roundRect(width - 395, 116, 315, 52, 26);
   ctx.fill();
-  ctx.strokeStyle = '#10b981';
+  ctx.strokeStyle = 'rgba(16, 185, 129, 0.35)';
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  ctx.fillStyle = '#10b981';
-  ctx.font = 'bold 21px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('⚡ LOLOS VERIFIKASI', width - 338, 207);
-
-  // Candidate Name & Track
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '900 62px "Plus Jakarta Sans", sans-serif';
-  const nameText = data.candidateName || 'Johan Pratama';
-  ctx.fillText(nameText.length > 16 ? nameText.slice(0, 16) + '...' : nameText, 120, 322);
-
-  // Top Percentile & Tier Pill (Sejajar dengan nama agar tidak menabrak teks ROLE di bawahnya)
-  const tierText = data.tier || 'TIER S+ (GOKIL PARAH)';
-  const tierLabel = `👑 ${tierText}`;
-  ctx.font = 'bold 21px "Plus Jakarta Sans", sans-serif';
-  const measuredTierW = Math.max(270, Math.min(380, ctx.measureText(tierLabel).width + 44));
-  const tierX = width - 90 - measuredTierW;
-
-  ctx.fillStyle = 'rgba(234, 179, 8, 0.2)';
-  ctx.beginPath();
-  ctx.roundRect(tierX, 276, measuredTierW, 54, 14);
-  ctx.fill();
-  ctx.strokeStyle = '#eab308';
-  ctx.lineWidth = 2.5;
-  ctx.stroke();
-
-  ctx.fillStyle = '#fde047';
-  ctx.fillText(tierLabel, tierX + 20, 311);
-
-  ctx.fillStyle = '#38bdf8';
-  ctx.font = 'bold 25px "JetBrains Mono", monospace';
-  ctx.fillText(`ROLE: ${(data.jobTrack || 'ACCOUNTING').toUpperCase()} • READY TO HIRE`, 120, 376);
-
-  // MAIN CARD AREA (GAYA CARD MODERN BERSUDUT BESAR)
-  const cardY = 430;
-  ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-  ctx.beginPath();
-  ctx.roundRect(90, cardY, width - 180, 890, 40);
-  ctx.fill();
-  ctx.strokeStyle = data.vibeTemplate === 'sunset' ? 'rgba(249, 115, 22, 0.5)' : data.vibeTemplate === 'midnight' ? 'rgba(168, 85, 247, 0.5)' : 'rgba(56, 189, 248, 0.5)';
-  ctx.lineWidth = 3.5;
-  ctx.stroke();
-
-  // STICKER GAUL (Rotated Badge di atas Card)
-  const stickerText = data.sticker || '🔥 MENYALA ABANGKUH 🔥';
-  ctx.save();
-  ctx.translate(220, cardY - 5);
-  ctx.rotate(-0.08); // Rotate -4.5 deg
-  ctx.fillStyle = '#f43f5e';
-  ctx.beginPath();
-  ctx.roundRect(-10, -28, 380, 56, 16);
-  ctx.fill();
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 3;
-  ctx.stroke();
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '900 24px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText(stickerText, 15, 8);
-  ctx.restore();
-
-  // Big Score 84 / 100
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '900 165px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText(`${data.score}`, 160, cardY + 200);
-
-  ctx.fillStyle = '#64748b';
-  ctx.font = 'bold 55px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('/100', 385, cardY + 200);
-
-  // Subtitle Badge di bawah skor
   ctx.fillStyle = '#34d399';
-  ctx.font = '800 28px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('✦ Certified STAR Prodigy • Siap Di-Hire ✦', 160, cardY + 260);
-
-  // MASCOT CAT CIRCLE & CUTE SPEECH BUBBLE
-  const catX = width - 250;
-  const catY = cardY + 160;
-
-  // Cat Circle background
-  ctx.save();
   ctx.beginPath();
-  ctx.arc(catX, catY, 95, 0, Math.PI * 2);
-  ctx.fillStyle = '#1e293b';
+  ctx.arc(width - 365, 142, 7, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = data.vibeTemplate === 'sunset' ? '#f97316' : '#38bdf8';
-  ctx.lineWidth = 5;
-  ctx.stroke();
-  // Cat emoji representation
-  ctx.fillStyle = '#fbbf24';
-  ctx.font = '76px sans-serif';
+
+  ctx.font = '800 22px "JetBrains Mono", monospace';
+  ctx.fillText('LOLOS VERIFIKASI ⚡', width - 344, 150);
+
+  // Header Row 2: Blue Circle Avatar + Candidate Name + ROLE + Tier Badge
+  const avatarX = 122;
+  const avatarY = 236;
+  const avatarGrad = ctx.createLinearGradient(avatarX - 38, avatarY - 38, avatarX + 38, avatarY + 38);
+  avatarGrad.addColorStop(0, '#2563eb');
+  avatarGrad.addColorStop(1, '#06b6d4');
+  ctx.fillStyle = avatarGrad;
+  ctx.beginPath();
+  ctx.arc(avatarX, avatarY, 38, 0, Math.PI * 2);
+  ctx.fill();
+
+  const nameText = data.candidateName || 'Johan';
+  const initialChar = nameText.charAt(0).toUpperCase();
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '900 34px "Plus Jakarta Sans", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('🐱⭐', catX, catY);
-  ctx.restore();
+  ctx.fillText(initialChar, avatarX, avatarY + 2);
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
 
-  // Speech bubble from cat
-  const bubbleText = data.catComment || 'HRD auto naksir CV lu! Meow 🐾';
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '900 36px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText(nameText.length > 18 ? nameText.slice(0, 18) + '...' : nameText, 180, 228);
+
+  ctx.fillStyle = '#67e8f9';
+  ctx.font = 'bold 22px "JetBrains Mono", monospace';
+  ctx.fillText(`ROLE: ${(data.jobTrack || 'ACCOUNTING').toUpperCase()} • READY TO HIRE`, 180, 262);
+
+  // Tier Pill on Right
+  const tierText = data.tier || 'TIER B (PERLU LATIHAN)';
+  const tierLabel = `👑 ${tierText}`;
+  ctx.font = '900 21px "JetBrains Mono", monospace';
+  const measuredTierW = Math.max(290, Math.min(400, ctx.measureText(tierLabel).width + 44));
+  const tierX = width - 80 - measuredTierW;
+
+  ctx.fillStyle = 'rgba(245, 158, 11, 0.18)';
+  ctx.beginPath();
+  ctx.roundRect(tierX, 198, measuredTierW, 56, 16);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(245, 158, 11, 0.45)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.fillStyle = '#fcd34d';
+  ctx.fillText(tierLabel, tierX + 20, 234);
+
+  // MAIN CARD AREA
+  const cardY = 470;
+  const cardH = 770;
+  ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+  ctx.beginPath();
+  ctx.roundRect(76, cardY, width - 152, cardH, 42);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(51, 65, 85, 0.85)';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // Floating Sticker Pill Centered Above Card (Rotated -3 deg)
+  const stickerText = data.sticker || '☕ NGOPI DULU GAIS';
   ctx.save();
-  ctx.translate(catX - 110, catY - 110);
-  ctx.rotate(-0.05);
+  ctx.translate(width / 2, cardY - 12);
+  ctx.rotate(-0.055);
+  const stkGrad = ctx.createLinearGradient(-190, 0, 190, 0);
+  stkGrad.addColorStop(0, '#f43f5e');
+  stkGrad.addColorStop(0.5, '#ec4899');
+  stkGrad.addColorStop(1, '#f59e0b');
+  ctx.fillStyle = stkGrad;
+  ctx.beginPath();
+  ctx.roundRect(-195, -42, 390, 84, 42);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '900 25px "Plus Jakarta Sans", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(stickerText, 0, -4);
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+  ctx.font = '600 18px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('tap ganti ↻', 0, 24);
+  ctx.restore();
+  ctx.textAlign = 'left';
+
+  // Big Score (e.g. 34 /100)
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '900 138px "Plus Jakarta Sans", sans-serif';
+  const scoreStr = `${data.score}`;
+  ctx.fillText(scoreStr, 118, cardY + 168);
+  const scoreW = ctx.measureText(scoreStr).width;
+
+  ctx.fillStyle = '#64748b';
+  ctx.font = 'bold 46px "JetBrains Mono", monospace';
+  ctx.fillText('/100', 118 + scoreW + 8, cardY + 168);
+
+  // Verdict Subtitle Below Score
+  const verdictStr = data.verdict || (data.score >= 80 ? 'Sangat Siap Kerja' : data.score >= 70 ? 'Cukup Siap Kerja' : 'Perlu Pendalaman STAR');
+  ctx.fillStyle = '#34d399';
+  ctx.font = '800 23px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText(`✦ ${verdictStr} - ${tierText} ✦`, 118, cardY + 220);
+
+  // Cute Blue Mascot Cat on Right Side of Card + Tilted White Speech Bubble
+  const catCenterX = width - 235;
+  const catCenterY = cardY + 150;
+  drawMascotCatOnCanvas(ctx, catCenterX, catCenterY, 1.15);
+
+  const bubbleText = data.catComment || 'Santai bro, jam terbang bikin jago! Latihan lagi yuk 🐾';
+  ctx.save();
+  ctx.translate(catCenterX - 180, catCenterY - 125);
+  ctx.rotate(-0.08);
   ctx.fillStyle = '#ffffff';
   ctx.beginPath();
-  ctx.roundRect(0, 0, 270, 56, 18);
+  ctx.roundRect(0, 0, 355, 50, 25);
   ctx.fill();
-  ctx.strokeStyle = '#38bdf8';
-  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 2;
   ctx.stroke();
   ctx.fillStyle = '#0f172a';
-  ctx.font = '800 17px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText(bubbleText.length > 25 ? bubbleText.slice(0, 23) + '..' : bubbleText, 15, 34);
+  ctx.font = '900 19px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText(bubbleText.length > 34 ? bubbleText.slice(0, 32) + '...' : bubbleText, 18, 32);
   ctx.restore();
 
-  // PERSONA BADGE BOX (LUCU & GAUL)
-  const personaY = cardY + 315;
-  ctx.fillStyle = 'rgba(30, 41, 59, 0.9)';
+  // PERSONA BOX (With Emoji + Title + "Otomatis XX%" Badge + Quote)
+  const personaY = cardY + 265;
+  ctx.fillStyle = 'rgba(2, 6, 23, 0.92)';
   ctx.beginPath();
-  ctx.roundRect(130, personaY, width - 260, 190, 24);
+  ctx.roundRect(112, personaY, width - 224, 185, 28);
   ctx.fill();
-  ctx.strokeStyle = 'rgba(251, 191, 36, 0.5)';
-  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = 'rgba(245, 158, 11, 0.45)';
+  ctx.lineWidth = 2;
   ctx.stroke();
 
-  // Persona Header (Otomatis menyesuaikan ukuran font agar tidak melewati batas kotak)
-  ctx.fillStyle = '#fbbf24';
-  const personaHeaderStr = `👑 ${data.personaTitle}`;
-  ctx.font = personaHeaderStr.length > 42
-    ? '900 25px "Plus Jakarta Sans", sans-serif'
-    : personaHeaderStr.length > 34
-      ? '900 28px "Plus Jakarta Sans", sans-serif'
-      : '900 32px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText(personaHeaderStr, 160, personaY + 52);
+  // "Otomatis XX%" Badge on Right of Persona Box
+  const autoBadgeText = `Otomatis ${data.score}%`;
+  ctx.font = 'bold 20px "JetBrains Mono", monospace';
+  const autoBadgeW = ctx.measureText(autoBadgeText).width + 32;
+  const autoBadgeX = width - 112 - autoBadgeW - 24;
+  ctx.fillStyle = 'rgba(245, 158, 11, 0.2)';
+  ctx.beginPath();
+  ctx.roundRect(autoBadgeX, personaY + 22, autoBadgeW, 38, 10);
+  ctx.fill();
+  ctx.fillStyle = '#fcd34d';
+  ctx.fillText(autoBadgeText, autoBadgeX + 16, personaY + 48);
 
-  // Funny Persona Quote (Wrap text)
-  ctx.fillStyle = '#e2e8f0';
-  ctx.font = 'italic 24px "Plus Jakarta Sans", sans-serif';
+  // Persona Header Title (Truncated cleanly before badge)
+  const personaEmoji = data.personaEmoji || (data.score < 70 ? '🥊' : '👑');
+  const rawTitle = `${personaEmoji} ${data.personaTitle}`;
+  ctx.fillStyle = '#fcd34d';
+  ctx.font = '800 27px "Plus Jakarta Sans", sans-serif';
+  const maxTitleWidth = autoBadgeX - 150;
+  let fittedTitle = rawTitle;
+  while (ctx.measureText(fittedTitle).width > maxTitleWidth && fittedTitle.length > 10) {
+    fittedTitle = fittedTitle.slice(0, -4) + '...';
+  }
+  ctx.fillText(fittedTitle, 140, personaY + 50);
+
+  // Persona Quote
+  ctx.fillStyle = '#cbd5e1';
+  ctx.font = 'italic 23px "Plus Jakarta Sans", sans-serif';
   const quote = `"${data.personaQuote}"`;
   if (quote.length > 58) {
     const half = quote.lastIndexOf(' ', 56);
-    ctx.fillText(quote.slice(0, half > 0 ? half : 55), 160, personaY + 105);
-    ctx.fillText(quote.slice(half > 0 ? half + 1 : 55), 160, personaY + 145);
+    ctx.fillText(quote.slice(0, half > 0 ? half : 55), 140, personaY + 104);
+    ctx.fillText(quote.slice(half > 0 ? half + 1 : 55), 140, personaY + 142);
   } else {
-    ctx.fillText(quote, 160, personaY + 115);
+    ctx.fillText(quote, 140, personaY + 112);
   }
 
-  // 4 STAR PILLARS METRICS GRID DENGAN NAMA GAUL
-  const starY = cardY + 540;
+  // 4 STAR PILLARS COMPACT GRID (Matching Screenshot 1)
+  const starY = cardY + 480;
   const pillars = [
-    { label: 'SITUATION', desc: 'Gercep Parah', val: data.situation, color: '#34d399' },
-    { label: 'TASK', desc: 'No Drama', val: data.task, color: '#60a5fa' },
-    { label: 'ACTION', desc: 'Sat-Set Gaspol', val: data.action, color: '#2dd4bf' },
-    { label: 'RESULT', desc: 'Penting Cuan', val: data.result, color: '#c084fc' },
+    { label: 'SITUATION', desc: '⚡ Gercep Parah', val: data.situation, color: '#34d399' },
+    { label: 'TASK', desc: '🎯 No Drama', val: data.task, color: '#60a5fa' },
+    { label: 'ACTION', desc: '🛠️ Sat-Set Gaspol', val: data.action, color: '#2dd4bf' },
+    { label: 'RESULT', desc: '📈 Penting Cuan', val: data.result, color: '#c084fc' },
   ];
 
   pillars.forEach((p, idx) => {
     const col = idx % 2;
     const row = Math.floor(idx / 2);
-    const px = 130 + col * 420;
-    const py = starY + row * 140;
+    const px = 112 + col * 438;
+    const py = starY + row * 126;
 
-    ctx.fillStyle = 'rgba(30, 41, 59, 0.7)';
+    ctx.fillStyle = 'rgba(2, 6, 23, 0.92)';
     ctx.beginPath();
-    ctx.roundRect(px, py, 390, 115, 18);
+    ctx.roundRect(px, py, 418, 108, 22);
     ctx.fill();
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 2;
+    ctx.stroke();
 
-    // Pillar title & gaul sublabel
     ctx.fillStyle = '#94a3b8';
     ctx.font = 'bold 22px "JetBrains Mono", monospace';
-    ctx.fillText(p.label, px + 22, py + 38);
+    ctx.fillText(p.label, px + 24, py + 42);
 
-    ctx.fillStyle = '#cbd5e1';
-    ctx.font = '600 18px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText(`• ${p.desc}`, px + 22, py + 65);
-
-    // Percentage
     ctx.fillStyle = p.color;
-    ctx.font = '900 40px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText(`${p.val}%`, px + 265, py + 52);
+    ctx.font = 'bold 24px "JetBrains Mono", monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(`${p.val}%`, px + 394, py + 42);
+    ctx.textAlign = 'left';
 
-    // Progress Bar Track
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
-    ctx.fillRect(px + 22, py + 84, 345, 10);
-    ctx.fillStyle = p.color;
-    ctx.fillRect(px + 22, py + 84, (345 * p.val) / 100, 10);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '600 21px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(p.desc, px + 24, py + 82);
   });
 
   // FOOTER / QR CODE BOX (VIRAL CTA - EYE CATCHING NEON)
-  const footerY = 1380;
-  const footerGrad = ctx.createLinearGradient(90, footerY, width - 90, footerY + 240);
-  footerGrad.addColorStop(0, 'rgba(6, 24, 38, 0.96)');
-  footerGrad.addColorStop(0.5, 'rgba(10, 32, 54, 0.96)');
-  footerGrad.addColorStop(1, 'rgba(15, 23, 42, 0.96)');
+  const footerY = 1360;
+  const footerGrad = ctx.createLinearGradient(76, footerY, width - 76, footerY + 240);
+  footerGrad.addColorStop(0, '#020617');
+  footerGrad.addColorStop(0.5, '#071a26');
+  footerGrad.addColorStop(1, '#0b1528');
   ctx.fillStyle = footerGrad;
   ctx.beginPath();
-  ctx.roundRect(90, footerY, width - 180, 240, 28);
+  ctx.roundRect(76, footerY, width - 152, 235, 34);
   ctx.fill();
 
-  const borderGrad = ctx.createLinearGradient(90, footerY, width - 90, footerY);
+  const borderGrad = ctx.createLinearGradient(76, footerY, width - 76, footerY);
   borderGrad.addColorStop(0, '#34d399');
   borderGrad.addColorStop(0.5, '#22d3ee');
   borderGrad.addColorStop(1, '#3b82f6');
@@ -308,87 +639,105 @@ export function renderScorecardToCanvas(data: ScorecardData): HTMLCanvasElement 
   ctx.stroke();
 
   // Header Badge Pill inside Footer
-  ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
+  ctx.fillStyle = 'rgba(16, 185, 129, 0.22)';
   ctx.beginPath();
-  ctx.roundRect(130, footerY + 26, 560, 46, 23);
+  ctx.roundRect(112, footerY + 26, 555, 46, 23);
   ctx.fill();
-  ctx.strokeStyle = 'rgba(52, 211, 153, 0.6)';
+  ctx.strokeStyle = 'rgba(52, 211, 153, 0.55)';
   ctx.lineWidth = 1.5;
   ctx.stroke();
 
   ctx.fillStyle = '#6ee7b7';
-  ctx.font = '900 24px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('🔥 COBA SIMULASI INTERVIEW AI GRATIS', 152, footerY + 57);
+  ctx.font = '900 23px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('🔥 COBA SIMULASI INTERVIEW AI GRATIS', 136, footerY + 57);
 
   // Highlighted URL Pill Box
   ctx.fillStyle = 'rgba(6, 182, 212, 0.22)';
   ctx.beginPath();
-  ctx.roundRect(130, footerY + 86, 645, 58, 16);
+  ctx.roundRect(112, footerY + 86, 655, 58, 18);
   ctx.fill();
   ctx.strokeStyle = '#22d3ee';
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  ctx.fillStyle = '#38bdf8';
+  ctx.fillStyle = '#67e8f9';
   ctx.font = '900 22px "JetBrains Mono", monospace';
-  ctx.fillText('🌐 https://interview-ai-wheat-one.vercel.app', 148, footerY + 122);
-  // Garis bawah (underline) bergaya hyperlink aktif
-  ctx.strokeStyle = '#38bdf8';
+  ctx.fillText('🌐 https://interview-ai-wheat-one.vercel.app', 132, footerY + 122);
+  ctx.strokeStyle = '#22d3ee';
   ctx.lineWidth = 2.5;
   ctx.beginPath();
-  ctx.moveTo(188, footerY + 129);
-  ctx.lineTo(750, footerY + 129);
+  ctx.moveTo(172, footerY + 129);
+  ctx.lineTo(742, footerY + 129);
   ctx.stroke();
 
   ctx.fillStyle = '#bae6fd';
-  ctx.font = '700 21px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('⚡ Scan QR atau klik link aktif di bawah buat buka aplikasi!', 135, footerY + 188);
+  ctx.font = '600 20px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('⚡ Scan QR atau klik link buat tes mental interview bareng!', 116, footerY + 188);
 
-  // Stylized QR Code
-  const qrX = width - 275;
-  const qrY = footerY + 45;
+  // Crisp QR Code Box with "SCAN GRATIS"
+  const qrX = width - 256;
+  const qrY = footerY + 34;
   ctx.fillStyle = '#ffffff';
   ctx.beginPath();
-  ctx.roundRect(qrX, qrY, 150, 150, 14);
+  ctx.roundRect(qrX, qrY, 148, 168, 24);
   ctx.fill();
+  ctx.strokeStyle = '#67e8f9';
+  ctx.lineWidth = 3;
+  ctx.stroke();
 
-  // Crisp QR pattern modules
-  ctx.fillStyle = '#000000';
-  ctx.fillRect(qrX + 15, qrY + 15, 35, 35);
-  ctx.clearRect(qrX + 22, qrY + 22, 21, 21);
-  ctx.fillRect(qrX + 27, qrY + 27, 11, 11);
+  ctx.fillStyle = '#020617';
+  ctx.fillRect(qrX + 24, qrY + 20, 36, 36);
+  ctx.clearRect(qrX + 31, qrY + 27, 22, 22);
+  ctx.fillRect(qrX + 36, qrY + 32, 12, 12);
 
-  ctx.fillRect(qrX + 100, qrY + 15, 35, 35);
-  ctx.clearRect(qrX + 107, qrY + 22, 21, 21);
-  ctx.fillRect(qrX + 112, qrY + 27, 11, 11);
+  ctx.fillRect(qrX + 88, qrY + 20, 36, 36);
+  ctx.clearRect(qrX + 95, qrY + 27, 22, 22);
+  ctx.fillRect(qrX + 100, qrY + 32, 12, 12);
 
-  ctx.fillRect(qrX + 15, qrY + 100, 35, 35);
-  ctx.clearRect(qrX + 22, qrY + 107, 21, 21);
-  ctx.fillRect(qrX + 27, qrY + 112, 11, 11);
+  ctx.fillRect(qrX + 24, qrY + 80, 36, 36);
+  ctx.clearRect(qrX + 31, qrY + 87, 22, 22);
+  ctx.fillRect(qrX + 36, qrY + 92, 12, 12);
 
-  ctx.fillRect(qrX + 65, qrY + 25, 20, 20);
-  ctx.fillRect(qrX + 60, qrY + 65, 30, 30);
-  ctx.fillRect(qrX + 105, qrY + 75, 25, 20);
-  ctx.fillRect(qrX + 65, qrY + 115, 25, 20);
+  ctx.fillRect(qrX + 68, qrY + 28, 12, 24);
+  ctx.fillRect(qrX + 66, qrY + 64, 24, 24);
+  ctx.fillRect(qrX + 98, qrY + 72, 22, 16);
+  ctx.fillRect(qrX + 70, qrY + 96, 22, 18);
+  ctx.fillRect(qrX + 102, qrY + 98, 18, 18);
 
-  // Pointer Bar di bawah Footer yang mengarahkan langsung ke Link Aktif di baris ke-1 Caption WhatsApp / Instagram
-  const pointerY = 1650;
-  ctx.fillStyle = 'rgba(16, 185, 129, 0.18)';
+  ctx.fillStyle = '#0f172a';
+  ctx.font = '900 16px "JetBrains Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('SCAN GRATIS', qrX + 74, qrY + 148);
+  ctx.textAlign = 'left';
+
+  // Bottom Green Link Bar (Inside Phone Frame)
+  const pointerY = 1622;
+  ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
   ctx.beginPath();
-  ctx.roundRect(90, pointerY, width - 180, 74, 20);
+  ctx.roundRect(76, pointerY, width - 152, 76, 24);
   ctx.fill();
   ctx.strokeStyle = '#10b981';
   ctx.lineWidth = 2.5;
   ctx.stroke();
 
   ctx.fillStyle = '#6ee7b7';
-  ctx.font = '800 22px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('👇 KLIK LINK BIRU https://interview-ai-wheat-one.vercel.app DI BAWAH INI 👇', 120, pointerY + 45);
+  ctx.font = '800 21px "Plus Jakarta Sans", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('👇 KLIK LINK BIRU https://interview-ai-wheat-one.vercel.app DI BAWAH INI 👇', width / 2, pointerY + 46);
+  ctx.strokeStyle = '#34d399';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(135, pointerY + 53);
+  ctx.lineTo(width - 135, pointerY + 53);
+  ctx.stroke();
+  ctx.textAlign = 'left';
 
   // Bottom Watermark
   ctx.fillStyle = '#64748b';
-  ctx.font = '500 20px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('Terenkripsi & Terverifikasi STAR Matrix v4.2 • AI Interview Simulation System', 170, height - 110);
+  ctx.font = '500 19px "Plus Jakarta Sans", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Terenkripsi & Terverifikasi STAR Matrix v4.2 • AI Interview Simulation System', width / 2, height - 115);
+  ctx.textAlign = 'left';
 
   // Optional Safe Zone Guides (if toggled)
   if (data.showSafeZones) {
@@ -396,13 +745,13 @@ export function renderScorecardToCanvas(data: ScorecardData): HTMLCanvasElement 
     ctx.setLineDash([12, 12]);
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(0, 250);
-    ctx.lineTo(width, 250);
+    ctx.moveTo(screenX, 250);
+    ctx.lineTo(screenX + screenW, 250);
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.moveTo(0, height - 320);
-    ctx.lineTo(width, height - 320);
+    ctx.moveTo(screenX, height - 320);
+    ctx.lineTo(screenX + screenW, height - 320);
     ctx.stroke();
     ctx.setLineDash([]);
   }
