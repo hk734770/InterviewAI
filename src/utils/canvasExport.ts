@@ -521,18 +521,18 @@ export function renderScorecardToCanvas(data: ScorecardData): HTMLCanvasElement 
 
   const bubbleText = data.catComment || 'Santai bro, jam terbang bikin jago! Latihan lagi yuk 🐾';
   ctx.save();
-  ctx.translate(catCenterX - 180, catCenterY - 125);
+  ctx.translate(catCenterX - 210, catCenterY - 125);
   ctx.rotate(-0.08);
   ctx.fillStyle = '#ffffff';
   ctx.beginPath();
-  ctx.roundRect(0, 0, 355, 50, 25);
+  ctx.roundRect(0, 0, 395, 50, 25);
   ctx.fill();
   ctx.strokeStyle = '#e2e8f0';
   ctx.lineWidth = 2;
   ctx.stroke();
   ctx.fillStyle = '#0f172a';
-  ctx.font = '900 19px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText(bubbleText.length > 34 ? bubbleText.slice(0, 32) + '...' : bubbleText, 18, 32);
+  ctx.font = '800 17px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText(bubbleText.length > 44 ? bubbleText.slice(0, 42) + '...' : bubbleText, 16, 31);
   ctx.restore();
 
   // PERSONA BOX (With Emoji + Title + "Otomatis XX%" Badge + Quote)
@@ -561,7 +561,7 @@ export function renderScorecardToCanvas(data: ScorecardData): HTMLCanvasElement 
   const personaEmoji = data.personaEmoji || (data.score < 70 ? '🥊' : '👑');
   const rawTitle = `${personaEmoji} ${data.personaTitle}`;
   ctx.fillStyle = '#fcd34d';
-  ctx.font = '800 27px "Plus Jakarta Sans", sans-serif';
+  ctx.font = '800 22px "Plus Jakarta Sans", sans-serif';
   const maxTitleWidth = autoBadgeX - 150;
   let fittedTitle = rawTitle;
   while (ctx.measureText(fittedTitle).width > maxTitleWidth && fittedTitle.length > 10) {
@@ -824,9 +824,9 @@ export function renderWhatsAppCompositeToCanvas(data: ScorecardData): HTMLCanvas
   ctx.fillText(`⭐ Skor STAR: ${data.score}/100 (${tierText})`, textX, boxY + 122);
 
   ctx.fillStyle = '#fde047';
-  ctx.font = 'bold 25px "Plus Jakarta Sans", sans-serif';
+  ctx.font = 'bold 23px "Plus Jakarta Sans", sans-serif';
   const titleLine = `👑 Judul: ${data.personaTitle}`;
-  ctx.fillText(titleLine.length > 52 ? titleLine.slice(0, 50) + '...' : titleLine, textX, boxY + 166);
+  ctx.fillText(titleLine.length > 68 ? titleLine.slice(0, 66) + '...' : titleLine, textX, boxY + 166);
 
   ctx.fillStyle = '#fb7185';
   ctx.font = 'bold 25px "Plus Jakarta Sans", sans-serif';

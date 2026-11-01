@@ -91,10 +91,9 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     vibeTemplate: 'neon',
   };
 
-  // Generate thumbnail JPG preview 1080x1920 & siapkan file cache (gabungan Teks Evaluasi STAR + Scorecard) agar siap dilampirkan langsung ke WhatsApp
+  // Pre-generate thumbnail JPG preview & siapkan file cache (gabungan Teks Evaluasi STAR + Scorecard)
+  // langsung saat komponen dimuat (bahkan sebelum modal dibuka) agar 0ms delay saat tombol Bagikan diklik
   useEffect(() => {
-    if (!isOpen) return;
-
     let isMounted = true;
     setIsGeneratingJpg(true);
     getScorecardJPGData(activeScorecardData)
@@ -124,7 +123,13 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [isOpen, target, activeScorecardData.vibeTemplate, activeScorecardData.sticker, activeScorecardData.personaTitle]);
+  }, [
+    activeScorecardData.candidateName,
+    activeScorecardData.score,
+    activeScorecardData.vibeTemplate,
+    activeScorecardData.sticker,
+    activeScorecardData.personaTitle,
+  ]);
 
   if (!isOpen) return null;
 
@@ -250,18 +255,23 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       }
     }
 
-    // 2. Gunakan Web Share API secara langsung (tanpa diblokir isDesktop) agar file gambar Scorecard + teks link aktif langsung terkirim ke Instagram
+    // 2. Panggil Web Share API SEBAGAI OPERASI PERTAMA (tanpa memanggil clipboard.writeText / setTarget sebelumnya
+    // agar user gesture activation 100% terjaga dan file gambar Scorecard langsung terkirim ke Instagram!)
     if (!cleanIg && fileToShare && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       try {
-        const canShareFiles = typeof navigator.canShare === 'function' ? navigator.canShare({ files: [fileToShare] }) : true;
-        if (canShareFiles) {
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(igMessage).catch(() => {});
-          }
-          await navigator.share({
-            files: [fileToShare],
-            text: igMessage,
-          });
+        const sharePayloadWithText = {
+          files: [fileToShare],
+          title: `Scorecard Evaluasi Interview STAR (${activeScorecardData.candidateName || 'Johan'})`,
+          text: igMessage,
+        };
+        const canShareWithText =
+          typeof navigator.canShare === 'function' ? navigator.canShare(sharePayloadWithText) : true;
+        const canShareFilesOnly =
+          typeof navigator.canShare === 'function' ? navigator.canShare({ files: [fileToShare] }) : true;
+
+        if (canShareWithText || canShareFilesOnly) {
+          await navigator.share(canShareWithText ? sharePayloadWithText : { files: [fileToShare] });
+          setTarget('instagram');
           setFeedbackMsg('✅ Berhasil! Kartu Scorecard & tautan aktif https://interview-ai-wheat-one.vercel.app berhasil dikirimkan ke Instagram.');
           try {
             confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
@@ -269,14 +279,17 @@ export const ShareModal: React.FC<ShareModalProps> = ({
           return;
         }
       } catch (err: any) {
-        if (err?.name === 'AbortError') return;
+        if (err?.name === 'AbortError') {
+          setTarget('instagram');
+          return;
+        }
         console.warn('Instagram share fallback:', err);
       }
     }
 
-    // 3. Fallback: Unduh file JPG gabungan & salin gambar ke clipboard
-    exportScorecardToJPG(activeScorecardData, true);
+    setTarget('instagram');
 
+    // 3. Fallback: Salin gambar Scorecard gabungan ke clipboard terlebih dahulu selagi user gesture masih aktif, lalu unduh file JPG gabungan
     if (cachedPngBlob && navigator.clipboard && typeof ClipboardItem !== 'undefined') {
       try {
         await navigator.clipboard.write([
@@ -291,6 +304,8 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     } else if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(igMessage).catch(() => {});
     }
+
+    exportScorecardToJPG(activeScorecardData, true);
 
     const targetAccount = cleanIg ? `@${cleanIg}` : 'Instagram';
     setFeedbackMsg(`✅ Kartu Scorecard & tautan aktif https://interview-ai-wheat-one.vercel.app telah disiapkan! Membuka ${targetAccount}...`);
@@ -326,9 +341,8 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     const cleanPhone = getCleanWaPhone();
     const waMessage = getFormattedWhatsAppMessage();
 
-    // 1. Siapkan file gambar JPG resolusi tinggi secara SINKRON (tanpa await)
-    // File ini berisi gabungan Teks Scorecard Evaluasi Interview STAR (di atas) + Kartu Visual Scorecard (di bawah)
-    // sehingga user gesture activation di Hand Phone (Android/iOS) tidak pernah hilang.
+    // 1. Ambil file gambar JPG gabungan (Teks Scorecard Evaluasi Interview STAR di atas + Kartu Visual Scorecard di bawah)
+    // yang sudah di-cache saat komponen dimuat (0ms delay).
     let fileToShare = cachedJpgFile;
     if (!fileToShare) {
       try {
@@ -339,20 +353,23 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       }
     }
 
-    // 2. Gunakan Web Share API secara langsung (tanpa diblokir isDesktop) agar Kartu Scorecard + Teks Evaluasi STAR
-    // beserta caption link aktif langsung terkirim ke WhatsApp!
+    // 2. Panggil Web Share API SEBAGAI OPERASI PERTAMA (tanpa memanggil clipboard.writeText / setTarget sebelumnya
+    // agar user gesture activation tidak hilang dan Kartu Scorecard + Teks Evaluasi STAR langsung terkirim ke WhatsApp!)
     if (!cleanPhone && fileToShare && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       try {
-        const canShareFiles = typeof navigator.canShare === 'function' ? navigator.canShare({ files: [fileToShare] }) : true;
+        const sharePayloadWithText = {
+          files: [fileToShare],
+          title: `Scorecard Evaluasi Interview STAR (${activeScorecardData.candidateName || 'Johan'})`,
+          text: waMessage,
+        };
+        const canShareWithText =
+          typeof navigator.canShare === 'function' ? navigator.canShare(sharePayloadWithText) : true;
+        const canShareFilesOnly =
+          typeof navigator.canShare === 'function' ? navigator.canShare({ files: [fileToShare] }) : true;
 
-        if (canShareFiles) {
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(waMessage).catch(() => {});
-          }
-          await navigator.share({
-            files: [fileToShare],
-            text: waMessage,
-          });
+        if (canShareWithText || canShareFilesOnly) {
+          await navigator.share(canShareWithText ? sharePayloadWithText : { files: [fileToShare] });
+          setTarget('whatsapp');
           setFeedbackMsg('✅ Berhasil! Teks Scorecard Evaluasi Interview STAR, Kartu Scorecard, dan link aktif https://interview-ai-wheat-one.vercel.app berhasil dikirim ke WhatsApp.');
           try {
             confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
@@ -360,15 +377,17 @@ export const ShareModal: React.FC<ShareModalProps> = ({
           return;
         }
       } catch (err: any) {
-        if (err?.name === 'AbortError') return;
+        if (err?.name === 'AbortError') {
+          setTarget('whatsapp');
+          return;
+        }
         console.warn('Navigator share error, continuing with direct WhatsApp URL:', err);
       }
     }
 
-    // 3. Fallback: Otomatis unduh file JPG gabungan (Teks Evaluasi STAR + Scorecard) ke perangkat
-    exportScorecardToJPG(activeScorecardData, true);
+    setTarget('whatsapp');
 
-    // 4. Salin gambar gabungan (Teks Evaluasi STAR + Scorecard) ke clipboard agar langsung siap ditempel di WhatsApp Web
+    // 3. Fallback: Salin gambar gabungan (Teks Evaluasi STAR + Scorecard) ke clipboard terlebih dahulu selagi user gesture aktif
     if (cachedPngBlob && navigator.clipboard && typeof ClipboardItem !== 'undefined') {
       try {
         await navigator.clipboard.write([
@@ -379,6 +398,9 @@ export const ShareModal: React.FC<ShareModalProps> = ({
         console.warn('Background clipboard write error:', err);
       }
     }
+
+    // 4. Unduh file JPG gabungan (Teks Evaluasi STAR + Scorecard) ke perangkat
+    exportScorecardToJPG(activeScorecardData, true);
 
     // 5. Buka WhatsApp dengan teks pesan lengkap & link aktif https://interview-ai-wheat-one.vercel.app
     const waUrl = getWhatsAppTargetUrl(cleanPhone, waMessage);
@@ -461,9 +483,6 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             {/* Pilihan 1: WhatsApp (Langsung Kirim Scorecard + Teks Evaluasi STAR saat diklik) */}
             <button
               onClick={() => {
-                setTarget('whatsapp');
-                setFeedbackMsg(null);
-                setIsDesktopGuideActive(false);
                 handleSendWhatsApp();
               }}
               className="w-full flex items-center justify-between p-4 sm:p-4.5 rounded-2xl bg-gradient-to-r from-emerald-950/60 via-teal-950/50 to-slate-900 border-2 border-emerald-500/60 hover:border-emerald-400 transition-all group hover:scale-[1.01] active:scale-[0.99] text-left shadow-xl shadow-emerald-950/50 cursor-pointer ring-2 ring-emerald-500/20"
@@ -492,9 +511,6 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             {/* Pilihan 2: Instagram (Langsung Kirim Scorecard + Teks saat diklik) */}
             <button
               onClick={() => {
-                setTarget('instagram');
-                setFeedbackMsg(null);
-                setIsDesktopGuideActive(false);
                 handleSendInstagram();
               }}
               className="w-full flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-pink-950/40 via-purple-950/30 to-slate-900/60 border border-pink-500/30 hover:border-pink-500/60 transition-all group hover:scale-[1.01] active:scale-[0.99] text-left cursor-pointer"
