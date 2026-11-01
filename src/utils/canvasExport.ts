@@ -320,13 +320,20 @@ export function renderScorecardToCanvas(data: ScorecardData): HTMLCanvasElement 
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = '#38bdf8';
   ctx.font = '900 22px "JetBrains Mono", monospace';
-  ctx.fillText('🌐 https://interview-ai-wheat-one.vercel.app', 148, footerY + 123);
+  ctx.fillText('🌐 https://interview-ai-wheat-one.vercel.app', 148, footerY + 122);
+  // Garis bawah (underline) bergaya hyperlink aktif
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(188, footerY + 129);
+  ctx.lineTo(750, footerY + 129);
+  ctx.stroke();
 
   ctx.fillStyle = '#bae6fd';
   ctx.font = '700 21px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('⚡ Scan QR atau klik link buat tes mental interview bareng!', 135, footerY + 188);
+  ctx.fillText('⚡ Scan QR atau klik link aktif di bawah buat buka aplikasi!', 135, footerY + 188);
 
   // Stylized QR Code
   const qrX = width - 275;
@@ -355,10 +362,24 @@ export function renderScorecardToCanvas(data: ScorecardData): HTMLCanvasElement 
   ctx.fillRect(qrX + 105, qrY + 75, 25, 20);
   ctx.fillRect(qrX + 65, qrY + 115, 25, 20);
 
+  // Pointer Bar di bawah Footer yang mengarahkan langsung ke Link Aktif di baris ke-1 Caption WhatsApp / Instagram
+  const pointerY = 1650;
+  ctx.fillStyle = 'rgba(16, 185, 129, 0.18)';
+  ctx.beginPath();
+  ctx.roundRect(90, pointerY, width - 180, 74, 20);
+  ctx.fill();
+  ctx.strokeStyle = '#10b981';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  ctx.fillStyle = '#6ee7b7';
+  ctx.font = '800 22px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('👇 KLIK LINK BIRU https://interview-ai-wheat-one.vercel.app DI BAWAH INI 👇', 120, pointerY + 45);
+
   // Bottom Watermark
   ctx.fillStyle = '#64748b';
   ctx.font = '500 20px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('Terenkripsi & Terverifikasi STAR Matrix v4.2 • AI Interview Simulation System', 170, height - 120);
+  ctx.fillText('Terenkripsi & Terverifikasi STAR Matrix v4.2 • AI Interview Simulation System', 170, height - 110);
 
   // Optional Safe Zone Guides (if toggled)
   if (data.showSafeZones) {
@@ -491,7 +512,7 @@ export function renderWhatsAppCompositeToCanvas(data: ScorecardData): HTMLCanvas
 
   ctx.fillStyle = '#bae6fd';
   ctx.font = 'bold 23px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('👉 Cobain Simulasi Gratis di sini:', textX, boxY + 580);
+  ctx.fillText('👉 Cobain Simulasi Gratis di sini (Klik Link Aktif di Caption):', textX, boxY + 580);
 
   // Pill Link URL
   ctx.fillStyle = 'rgba(6, 182, 212, 0.22)';
@@ -502,9 +523,15 @@ export function renderWhatsAppCompositeToCanvas(data: ScorecardData): HTMLCanvas
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = '#38bdf8';
   ctx.font = '900 24px "JetBrains Mono", monospace';
   ctx.fillText('🌐 https://interview-ai-wheat-one.vercel.app', textX + 20, boxY + 634);
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(textX + 62, boxY + 641);
+  ctx.lineTo(textX + 660, boxY + 641);
+  ctx.stroke();
 
   // Tempelkan Kartu Visual Scorecard 1080x1920 tepat di bawah Teks Evaluasi STAR
   ctx.drawImage(scorecardCanvas, 0, headerHeight);

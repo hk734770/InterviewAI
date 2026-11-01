@@ -234,20 +234,10 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
   }, [autoSticker]);
 
   const fieldObj = JOB_FIELDS.find((f) => f.id === selectedField) || JOB_FIELDS[1];
-  const candidateSlug = (candidateName || 'johan').toLowerCase().replace(/\s+/g, '');
-  const isGoogleRunApp = typeof window !== 'undefined' && window.location.origin && (
-    window.location.origin.includes('run.app') ||
-    window.location.origin.includes('google') ||
-    window.location.origin.includes('ais-') ||
-    window.location.origin.includes('localhost')
-  );
-  // Gunakan link bersih tanpa memicu crawler intersisial "Cookie check" dari Google Cloud Run
-  const promoUrl = typeof window !== 'undefined' && window.location.origin && !isGoogleRunApp
-    ? `${window.location.origin}/?ref=simulasi-gratis` 
-    : 'https://interview-ai-wheat-one.vercel.app/?ref=simulasi-gratis';
+  const promoUrl = 'https://interview-ai-wheat-one.vercel.app';
   
-  // Caption bergaya gaul anak muda lengkap dengan Lampiran Gambar Scorecard JPG 1080x1920 & promosi simulasi gratis
-  const captionText = `Gila bener skor interview AI gue tembus ${evalResult.overallScore}/100 nih 🔥! Judulnya otomatis dapet "${selectedPersona.title}" 😭😂.\n\nSticker: ${activeSticker}\n\n📸 *[FILE GAMBAR SCORECARD STAR (JPG 1080x1920) DILAMPIRKAN]*\nFile kartu Scorecard STAR format JPG resolusi tinggi (1080x1920) dilampirkan langsung di pesan ini.\n\n🎁 Mau coba uji mental interview lawan AI & dapet Scorecard kayak gini?\n👉 Cobain Simulasi Gratis di sini:\n${promoUrl}\n\n#MenyalaAbangku #InterviewAI #STARMethod #GenZCareer`;
+  // Caption bergaya gaul anak muda dengan link aktif https://interview-ai-wheat-one.vercel.app di baris pertama & bawah agar langsung bisa diklik di WhatsApp & Instagram
+  const captionText = `🌐 ${promoUrl}\n👆 KLIK LINK DI ATAS UNTUK MEMBUKA APLIKASI INTERVIEW AI 🔥\n\nGila bener skor interview AI gue tembus ${evalResult.overallScore}/100 nih 🔥! Judulnya otomatis dapet "${selectedPersona.title}" 😭😂.\n\nSticker: ${activeSticker}\n\n📸 *[FILE GAMBAR SCORECARD STAR (JPG 1080x1920) DILAMPIRKAN]*\nFile kartu Scorecard STAR format JPG resolusi tinggi (1080x1920) dilampirkan langsung di pesan ini.\n\n🎁 Mau coba uji mental interview lawan AI & dapet Scorecard kayak gini?\n👉 Cobain Simulasi Gratis di sini (Klik Link):\n${promoUrl}\n\n#MenyalaAbangku #InterviewAI #STARMethod #GenZCareer`;
 
   const handleCopyCaption = () => {
     navigator.clipboard?.writeText(captionText);
@@ -708,8 +698,14 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
                 </div>
               </div>
 
-              {/* Story Footer & QR Box - Eye Catching Neon CTA */}
-              <div className="relative z-10 rounded-2xl p-[1.5px] bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 shadow-[0_0_25px_rgba(6,182,212,0.35)]">
+              {/* Story Footer & QR Box - Eye Catching Neon CTA (Seluruh area & URL bisa diklik langsung membuka aplikasi) */}
+              <a
+                href="https://interview-ai-wheat-one.vercel.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative z-10 block rounded-2xl p-[1.5px] bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 shadow-[0_0_25px_rgba(6,182,212,0.35)] hover:scale-[1.01] active:scale-[0.99] transition-transform cursor-pointer group"
+                title="Klik untuk langsung membuka aplikasi https://interview-ai-wheat-one.vercel.app"
+              >
                 <div className="p-2.5 rounded-[14px] bg-gradient-to-br from-slate-950 via-[#071a26] to-[#0b1528] flex items-center justify-between gap-2.5 relative overflow-hidden">
                   {/* Subtle ambient light sweep */}
                   <div className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-cyan-500/15 blur-xl pointer-events-none" />
@@ -724,16 +720,11 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
                     </div>
 
                     {/* Highlighted URL Pill */}
-                    <a
-                      href="https://interview-ai-wheat-one.vercel.app"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block px-2 py-1 rounded-lg bg-gradient-to-r from-cyan-500/25 via-blue-600/25 to-indigo-500/25 border border-cyan-400/60 shadow-[0_0_12px_rgba(34,211,238,0.25)] hover:border-cyan-300 transition-all"
-                    >
-                      <span className="text-[9.5px] font-mono font-black text-white drop-shadow-[0_1px_4px_rgba(34,211,238,0.6)] tracking-tight whitespace-nowrap block">
+                    <div className="block px-2 py-1 rounded-lg bg-gradient-to-r from-cyan-500/25 via-blue-600/25 to-indigo-500/25 border border-cyan-400/60 shadow-[0_0_12px_rgba(34,211,238,0.25)] group-hover:border-cyan-300 transition-all">
+                      <span className="text-[9.5px] font-mono font-black text-cyan-300 group-hover:text-white underline decoration-cyan-400 drop-shadow-[0_1px_4px_rgba(34,211,238,0.6)] tracking-tight whitespace-nowrap block">
                         🌐 https://interview-ai-wheat-one.vercel.app
                       </span>
-                    </a>
+                    </div>
 
                     <span className="text-[8px] text-cyan-200/80 font-medium block leading-none pl-0.5">
                       ⚡ Scan QR atau klik link buat tes mental interview bareng!
@@ -748,7 +739,7 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
                     </span>
                   </div>
                 </div>
-              </div>
+              </a>
             </div>
           </div>
 
@@ -990,7 +981,21 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
                 </div>
 
                 <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 leading-relaxed font-sans whitespace-pre-line">
-                  {captionText}
+                  {captionText.split(/(https:\/\/interview-ai-wheat-one\.vercel\.app)/g).map((part, idx) =>
+                    part === 'https://interview-ai-wheat-one.vercel.app' ? (
+                      <a
+                        key={idx}
+                        href="https://interview-ai-wheat-one.vercel.app"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-cyan-400 hover:text-cyan-300 font-mono font-bold underline"
+                      >
+                        {part}
+                      </a>
+                    ) : (
+                      <React.Fragment key={idx}>{part}</React.Fragment>
+                    )
+                  )}
                 </div>
               </div>
 
