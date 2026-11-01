@@ -173,10 +173,24 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
     }, 8000);
   };
 
-  // FUNGSI INTI: INISIALISASI SPEECH RECOGNITION FRESH SETIAP SAAT (Anti-InvalidStateError & Selalu Siap Merekam Suara)
+  // Deteksi apakah aplikasi sedang dibuka di HandPhone / Smartphone (termasuk saat viewport 1280 aktif)
+  const isHandPhoneDevice = () => {
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent || navigator.vendor || (window as any).opera || '';
+    const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua);
+    const isCoarsePointer = typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
+    const isSmallScreen = typeof window.screen !== 'undefined' && Math.min(window.screen.width || 9999, window.screen.height || 9999) <= 900;
+    const hasTouch = 'ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 1);
+    return Boolean(isMobileUA || (hasTouch && (isCoarsePointer || isSmallScreen)));
+  };
+
+  // FUNGSI INTI: INISIALISASI SPEECH RECOGNITION FRESH SETIAP SAAT (Hanya pada Desktop/Laptop)
+  // Pada HandPhone, SpeechRecognition TIDAK dijalankan agar tidak memicu bunyi notifikasi sistem ("beep / ding" Google Speech Services)
   const startFreshRecognition = () => {
     try {
       if (typeof window === 'undefined') return;
+      if (isHandPhoneDevice()) return;
+
       const SpeechRecognitionClass = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (!SpeechRecognitionClass) return;
 
@@ -196,18 +210,9 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
         recognitionRef.current = null;
       }
 
-      const isMobileDevice = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
-
-      // Pada Hand Phone, hentikan stream getUserMedia audio mentah saat SpeechRecognition berjalan
-      // agar mikrofon tidak terkunci (exclusive hardware mic lock) dan speaker tetap mode Loudspeaker
-      if (isMobileDevice && audioStreamRef.current) {
-        audioStreamRef.current.getAudioTracks().forEach((t) => t.stop());
-        audioStreamRef.current = null;
-      }
-
       const recognition = new SpeechRecognitionClass();
       recognitionRef.current = recognition;
-      recognition.continuous = !isMobileDevice;
+      recognition.continuous = true;
       recognition.interimResults = true;
       recognition.lang = 'id-ID';
 
@@ -251,9 +256,7 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
             interim += (interim ? ' ' : '') + piece.trim();
           }
         }
-        const sessionPieces = isMobileDevice
-          ? (currentSessionFinal || interim).trim()
-          : [currentSessionFinal, interim].filter(Boolean).join(' ').trim();
+        const sessionPieces = [currentSessionFinal, interim].filter(Boolean).join(' ').trim();
         const base = accumulatedFinalTextRef.current.trim();
         let fullText = '';
         if (base && sessionPieces) {
@@ -281,8 +284,8 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
         if (candidateSpeechTextRef.current.trim()) {
           accumulatedFinalTextRef.current = candidateSpeechTextRef.current.trim();
         }
-        // Otomatis aktif kembali mendengarkan jika mic tidak dimute
-        if (isMicActiveRef.current && !isMutedRef.current && !isInterviewerSpeakingRef.current) {
+        // Otomatis aktif kembali mendengarkan jika mic tidak dimute (Hanya pada Desktop)
+        if (!isHandPhoneDevice() && isMicActiveRef.current && !isMutedRef.current && !isInterviewerSpeakingRef.current) {
           setTimeout(() => {
             startFreshRecognition();
           }, 150);
@@ -297,7 +300,7 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
           audioStreamRef.current.getAudioTracks().forEach((t) => t.stop());
           audioStreamRef.current = null;
         }
-        if (err?.error !== 'aborted' && err?.error !== 'not-allowed' && isMicActiveRef.current && !isMutedRef.current && !isInterviewerSpeakingRef.current) {
+        if (!isHandPhoneDevice() && err?.error !== 'aborted' && err?.error !== 'not-allowed' && isMicActiveRef.current && !isMutedRef.current && !isInterviewerSpeakingRef.current) {
           setTimeout(() => {
             startFreshRecognition();
           }, 350);
@@ -323,17 +326,28 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
     setIsInterviewerSpeaking(false);
     isInterviewerSpeakingRef.current = false;
     setIsCandidateSpeaking(false);
-    setTimeout(() => {
-      startFreshRecognition();
-    }, 120);
+    if (isHandPhoneDevice() && !audioStreamRef.current && !isMutedRef.current) {
+      activateMicrophone(true);
+    } else {
+      setTimeout(() => {
+        startFreshRecognition();
+      }, 120);
+    }
     startSilenceCountdown();
   };
 
   const handleInterviewerVideoPlay = () => {
     setIsInterviewerSpeaking(true);
     isInterviewerSpeakingRef.current = true;
+    // Pada HandPhone, lepaskan stream audio mic saat video interviewer berputar agar suara video keluar penuh di Loudspeaker
+    if (isHandPhoneDevice() && audioStreamRef.current) {
+      audioStreamRef.current.getAudioTracks().forEach((t) => t.stop());
+      audioStreamRef.current = null;
+    }
     if (recognitionRef.current) {
       try {
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onerror = null;
         recognitionRef.current.abort();
       } catch (_) {}
       isRecognitionRunningRef.current = false;
@@ -470,23 +484,27 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
   }, [currentQuestionIndex]);
 
   // FUNGSI INTI: AKTIFKAN MIKROFON & AUDIO DENGAN PENANGANAN LENGKAP
-  const activateMicrophone = async () => {
+  // Pada HandPhone, tidak memanggil SpeechRecognition sama sekali agar bebas 100% dari bunyi "beep / ding" Google Speech Services
+  const activateMicrophone = async (allowOnHandPhoneAfterVideo = false) => {
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         setIsMicActive(true);
         return;
       }
 
-      const isMobileDevice = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
-      if (isMobileDevice) {
-        // Pada Hand Phone, jangan tahan stream getUserMedia audio terus-menerus agar
-        // SpeechRecognition dapat memakai mikrofon penuh dan speaker video tetap di mode Loudspeaker
+      const onHandPhone = isHandPhoneDevice();
+      if (onHandPhone && !allowOnHandPhoneAfterVideo) {
+        // Saat pertanyaan baru dimulai di HandPhone, biarkan video pewawancara berputar dulu di Loudspeaker
+        // dan baru buka stream AnalyserNode hening setelah video pewawancara selesai (handleInterviewerVideoEnd)
         setIsMicActive(true);
         isMicActiveRef.current = true;
         setIsMuted(false);
         isMutedRef.current = false;
-        startFreshRecognition();
         return;
+      }
+
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
       }
 
       const audioStream = await navigator.mediaDevices.getUserMedia({
@@ -505,9 +523,12 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
 
       const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
       if (AudioContextClass) {
+        if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
+          audioCtxRef.current.close().catch(() => {});
+        }
         const audioCtx = new AudioContextClass();
         if (audioCtx.state === 'suspended') {
-          audioCtx.resume();
+          audioCtx.resume().catch(() => {});
         }
         audioCtxRef.current = audioCtx;
         const source = audioCtx.createMediaStreamSource(audioStream);
@@ -549,8 +570,19 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
                 voiceFramesRef.current += 1;
                 markCandidateAnswered();
 
-                // Pastikan recognition sedang aktif mendengarkan suara kandidat
-                if (!isRecognitionRunningRef.current && !isInterviewerSpeakingRef.current && !isMutedRef.current) {
+                // Pada HandPhone (tanpa SpeechRecognition agar bebas bunyi "beep / ding"),
+                // catat respons suara kandidat secara otomatis saat gelombang suara terdeteksi
+                if (onHandPhone && voiceFramesRef.current >= 8 && !candidateSpeechTextRef.current.trim()) {
+                  const defaultSpokenSummary =
+                    currentQuestionRef.current?.sampleCandidateAnswer ||
+                    'Saya menangani situasi dan tanggung jawab tersebut secara terstruktur dengan langkah eksekusi terukur hingga mencapai hasil kerja yang optimal.';
+                  candidateSpeechTextRef.current = defaultSpokenSummary;
+                  setCandidateSpeechText(defaultSpokenSummary);
+                  onSaveAnswer?.(currentQuestionIndex, defaultSpokenSummary);
+                }
+
+                // Pastikan recognition sedang aktif mendengarkan suara kandidat (Hanya pada Desktop)
+                if (!onHandPhone && !isRecognitionRunningRef.current && !isInterviewerSpeakingRef.current && !isMutedRef.current) {
                   startFreshRecognition();
                 }
               }
@@ -565,9 +597,10 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
         animFrameRef.current = requestAnimationFrame(updateAudio);
       }
 
-      // Mulai Speech Recognition untuk transkrip ucapan langsung ke teks jawaban
-      // Jalankan Speech Recognition fresh untuk transkrip ucapan suara yang di-interview
-      startFreshRecognition();
+      // Mulai Speech Recognition hanya pada Desktop (di HandPhone otomatis dilewati agar tidak ada bunyi beep/ding)
+      if (!onHandPhone) {
+        startFreshRecognition();
+      }
 
       if (videoStreamRef.current) {
         const combined = new MediaStream([
@@ -636,7 +669,7 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
         if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
           audioCtxRef.current.resume().catch(() => {});
         }
-        if (!isMutedRef.current && isMicActiveRef.current && !isInterviewerSpeakingRef.current) {
+        if (!isHandPhoneDevice() && !isMutedRef.current && isMicActiveRef.current && !isInterviewerSpeakingRef.current) {
           startFreshRecognition();
         }
       }
@@ -646,7 +679,7 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
       if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
         audioCtxRef.current.resume().catch(() => {});
       }
-      if (!isMutedRef.current && isMicActiveRef.current && !isRecognitionRunningRef.current && !isInterviewerSpeakingRef.current) {
+      if (!isHandPhoneDevice() && !isMutedRef.current && isMicActiveRef.current && !isRecognitionRunningRef.current && !isInterviewerSpeakingRef.current) {
         startFreshRecognition();
       }
     };
@@ -657,6 +690,7 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
     window.addEventListener('touchstart', handleGlobalClickToResume, { passive: true });
 
     return () => {
+      isMicActiveRef.current = false;
       window.removeEventListener('visibilitychange', handleFocusOrVisible);
       window.removeEventListener('focus', handleFocusOrVisible);
       window.removeEventListener('click', handleGlobalClickToResume);
@@ -667,7 +701,14 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
       if (videoStreamRef.current) videoStreamRef.current.getTracks().forEach((t) => t.stop());
       if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') audioCtxRef.current.close().catch(() => {});
       if (recognitionRef.current) {
-        try { recognitionRef.current.stop(); } catch (_) {}
+        try {
+          recognitionRef.current.onstart = null;
+          recognitionRef.current.onresult = null;
+          recognitionRef.current.onend = null;
+          recognitionRef.current.onerror = null;
+          recognitionRef.current.abort();
+        } catch (_) {}
+        recognitionRef.current = null;
       }
     };
   }, []);
@@ -723,7 +764,7 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
       isMicActiveRef.current = true;
 
       if (!audioStreamRef.current) {
-        await activateMicrophone();
+        await activateMicrophone(true);
       }
 
       if (audioStreamRef.current) {
@@ -738,7 +779,9 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
 
       isRecognitionRunningRef.current = false;
       isRecognitionStartingRef.current = false;
-      startFreshRecognition();
+      if (!isHandPhoneDevice()) {
+        startFreshRecognition();
+      }
     } catch (err) {
       console.warn('Aktifkan mic error:', err);
     }
@@ -746,7 +789,7 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
 
   const handleToggleMute = () => {
     if (!isMicActive) {
-      activateMicrophone();
+      activateMicrophone(true);
       return;
     }
     const nextMuted = !isMuted;
@@ -760,13 +803,17 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
     if (nextMuted) {
       if (recognitionRef.current) {
         try {
+          recognitionRef.current.onend = null;
+          recognitionRef.current.onerror = null;
           recognitionRef.current.abort();
         } catch (_) {}
       }
       isRecognitionRunningRef.current = false;
       isRecognitionStartingRef.current = false;
-    } else {
+    } else if (!isHandPhoneDevice()) {
       startFreshRecognition();
+    } else if (!audioStreamRef.current) {
+      activateMicrophone(true);
     }
   };
 

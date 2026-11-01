@@ -302,25 +302,21 @@ export const S02AVCheck: React.FC<S02AVCheckProps> = ({
     connectMicrophone(deviceId);
   };
 
-  // Tes output audio speaker (Pada HandPhone tidak mengeluarkan suara sesuai permintaan)
+  // Tes output audio speaker (Pada HandPhone membunyikan nada chime saat tombol Tes Speaker ditekan)
   const handleTestSpeaker = () => {
     setIsPlayingSpeakerTone(true);
     setSpeakerTestSuccess(false);
 
     if (isHandPhoneDevice()) {
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        try {
-          window.speechSynthesis.cancel();
-        } catch (_) {}
-      }
+      playTestChime();
       setTimeout(() => {
         setIsPlayingSpeakerTone(false);
         setSpeakerTestSuccess(true);
-      }, 800);
+      }, 900);
       return;
     }
 
-    // Memutar nada dan ucapan bahasa Indonesia secara jernih (Hanya pada Desktop/Laptop)
+    // Memutar nada dan ucapan bahasa Indonesia secara jernih (Pada Desktop/Laptop)
     playSpeakerVoiceTest(() => {
       setIsPlayingSpeakerTone(false);
       setSpeakerTestSuccess(true);
