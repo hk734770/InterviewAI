@@ -29,6 +29,7 @@ export default function App() {
     if (currentStep !== 'S01') {
       try {
         sessionStorage.removeItem('s01_setup_auto_reloaded');
+        sessionStorage.removeItem('interview_ai_auto_reload_ts');
       } catch (_) {}
     }
   }, [currentStep]);

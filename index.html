@@ -5,6 +5,24 @@
     <meta name="viewport" id="viewport-meta" content="width=1280, user-scalable=yes" />
     <script>
       (function () {
+        // Otomatis lakukan Reload this page saat aplikasi pertama kali dibuka
+        try {
+          var now = Date.now();
+          var lastReloadTs = parseInt(sessionStorage.getItem('interview_ai_auto_reload_ts') || '0', 10);
+          if (!lastReloadTs || now - lastReloadTs > 5000) {
+            sessionStorage.setItem('interview_ai_auto_reload_ts', String(now));
+            sessionStorage.setItem('s01_setup_auto_reloaded', 'true');
+            window.location.reload();
+            return;
+          }
+        } catch (e) {}
+
+        window.addEventListener('pageshow', function (event) {
+          if (event.persisted) {
+            window.location.reload();
+          }
+        });
+
         function applyNotebookViewport() {
           var vp = document.getElementById('viewport-meta');
           if (!vp) return;

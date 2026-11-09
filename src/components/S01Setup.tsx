@@ -51,18 +51,33 @@ export const S01Setup: React.FC<S01SetupProps> = ({
 }) => {
   const [isReloading, setIsReloading] = useState(false);
 
-  // OTOMATIS: Pada saat S01 Setup dibuka, otomatis lakukan Reload the app (dengan proteksi sessionStorage agar tidak infinite loop)
+  // OTOMATIS: Pada saat aplikasi / S01 Setup dibuka, otomatis lakukan Reload this page (dengan proteksi timestamp agar selalu aktif setiap kali aplikasi dibuka kembali tanpa infinite loop)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
+      const now = Date.now();
+      const lastReloadTs = parseInt(sessionStorage.getItem('interview_ai_auto_reload_ts') || '0', 10);
       const hasReloaded = sessionStorage.getItem('s01_setup_auto_reloaded');
-      if (!hasReloaded) {
+
+      if (!hasReloaded && (!lastReloadTs || now - lastReloadTs > 5000)) {
+        sessionStorage.setItem('interview_ai_auto_reload_ts', String(now));
         sessionStorage.setItem('s01_setup_auto_reloaded', 'true');
         setIsReloading(true);
         setTimeout(() => {
           window.location.reload();
-        }, 80);
+        }, 50);
+        return;
       }
+
+      // Bersihkan flag setelah halaman selesai dimuat agar saat aplikasi dibuka lagi di tab yang sama tetap otomatis Reload this page
+      const cleanupTimer = setTimeout(() => {
+        try {
+          sessionStorage.removeItem('interview_ai_auto_reload_ts');
+          sessionStorage.removeItem('s01_setup_auto_reloaded');
+        } catch (_) {}
+      }, 1500);
+
+      return () => clearTimeout(cleanupTimer);
     } catch (e) {
       console.warn('Auto reload storage access error:', e);
     }
@@ -89,7 +104,7 @@ export const S01Setup: React.FC<S01SetupProps> = ({
         <div className="fixed inset-0 z-50 bg-[#080c14]/90 backdrop-blur-md flex flex-col items-center justify-center space-y-3">
           <div className="w-10 h-10 border-4 border-cyan-500/30 border-t-cyan-400 rounded-full animate-spin" />
           <p className="text-sm font-semibold text-cyan-300 font-mono tracking-wide">
-            Memuat ulang aplikasi (Reload the app)...
+            Memuat ulang halaman (Reload this page)...
           </p>
         </div>
       )}
