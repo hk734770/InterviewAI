@@ -45,8 +45,8 @@ export const Header: React.FC<HeaderProps> = ({ currentStep, onSelectStep }) => 
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full bg-[#090d16]/90 backdrop-blur-md border-b border-slate-800/80 px-3 lg:px-6 py-3">
-        <div className="max-w-[1440px] mx-auto flex items-center justify-between gap-2.5">
+      <header className="sticky top-0 z-40 w-full bg-[#090d16]/90 backdrop-blur-md border-b border-slate-800/80 px-3 lg:px-6 py-3 print:static print:px-2 print:py-2">
+        <div className="max-w-[1440px] mx-auto flex items-center justify-between gap-2.5 print:flex-wrap print:gap-1.5">
           {/* Brand Zone */}
           <div 
             onClick={() => onSelectStep('S01')}
@@ -68,14 +68,14 @@ export const Header: React.FC<HeaderProps> = ({ currentStep, onSelectStep }) => 
           </div>
 
           {/* Center Navigation Steps Bar */}
-          <nav className="hidden md:flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800 shadow-inner overflow-x-auto">
+          <nav className="hidden md:flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800 shadow-inner overflow-x-auto print:flex-wrap print:overflow-visible">
             {STEPS.map((step) => {
               const isActive = currentStep === step.id;
               return (
                 <button
                   key={step.id}
                   onClick={() => onSelectStep(step.id)}
-                  className={`px-2.5 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+                  className={`px-2.5 py-1.5 print:px-1.5 print:py-1 print:text-[10px] text-xs font-semibold rounded-lg transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                     isActive
                       ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 font-bold'
                       : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
@@ -88,7 +88,7 @@ export const Header: React.FC<HeaderProps> = ({ currentStep, onSelectStep }) => 
           </nav>
 
           {/* Right Status Zone */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 print:flex-wrap print:gap-1">
             {/* Tombol Bagikan Link Publik */}
             <button
               onClick={handleCopyLink}

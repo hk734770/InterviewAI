@@ -42,6 +42,13 @@
         window.addEventListener('orientationchange', function () {
           setTimeout(applyNotebookViewport, 100);
         });
+        window.addEventListener('beforeprint', function () {
+          var vp = document.getElementById('viewport-meta');
+          if (vp) vp.setAttribute('content', 'width=device-width, initial-scale=1.0');
+        });
+        window.addEventListener('afterprint', function () {
+          applyNotebookViewport();
+        });
       })();
     </script>
     <title>InterviewAI - Simulasi Interview Kerja Realistis</title>

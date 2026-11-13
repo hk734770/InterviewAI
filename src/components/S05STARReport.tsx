@@ -62,34 +62,44 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
   };
 
   const handleDownloadPDF = () => {
-    window.print();
+    const vp = document.getElementById('viewport-meta');
+    const prevContent = vp ? vp.getAttribute('content') : null;
+    if (vp) {
+      vp.setAttribute('content', 'width=device-width, initial-scale=1.0');
+    }
+    setTimeout(() => {
+      window.print();
+      if (vp && prevContent) {
+        vp.setAttribute('content', prevContent);
+      }
+    }, 50);
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 py-8 space-y-8 animate-fadeIn">
+    <div className="w-full max-w-6xl mx-auto px-4 py-8 space-y-8 animate-fadeIn print:max-w-full print:px-2 print:py-3 print:space-y-5 overflow-hidden">
       {/* Subheader Title Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
-        <div>
-          <div className="flex items-center gap-2 mb-1.5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800 print:flex-wrap print:gap-3 print:pb-4">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2 mb-1.5">
             <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold text-xs border border-emerald-500/20 flex items-center gap-1.5 font-mono">
               <span className="w-2 h-2 rounded-full bg-emerald-400" />
               SESI SELESAI
             </span>
             <span className="text-xs text-slate-400 font-mono">ID: #IVW-9821 • 14 Okt 2024</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl print:text-xl font-black text-white tracking-tight break-words">
             Hasil Wawancara Kerja: <span className="text-cyan-400">{candidateName || 'Budi Pratama'}</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1 flex items-center gap-1.5 font-medium">
+          <p className="text-xs sm:text-sm text-slate-400 mt-1 flex flex-wrap items-center gap-1.5 font-medium">
             <span>💼 Target Posisi:</span>
             <span className="text-slate-200 font-bold">{fieldObj.title} ({fieldObj.subtitle})</span>
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
           <button
             onClick={onGoToScorecard}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white text-xs font-bold transition-all shadow-md shadow-pink-600/25 hover:scale-105 active:scale-95"
+            className="flex items-center gap-1.5 px-4 py-2.5 print:px-3 print:py-1.5 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white text-xs font-bold transition-all shadow-md shadow-pink-600/25 hover:scale-105 active:scale-95"
             title="Lihat Scorecard Gaul 9:16 untuk Instagram / WhatsApp"
           >
             <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
@@ -97,14 +107,14 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
           </button>
           <button
             onClick={handleDownloadPDF}
-            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-xs font-bold transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2.5 print:px-3 print:py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-xs font-bold transition-colors"
           >
             <Download className="w-4 h-4 text-cyan-400" />
             <span>PDF</span>
           </button>
           <button
             onClick={handleShareLink}
-            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-xs font-bold transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2.5 print:px-3 print:py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-xs font-bold transition-colors"
           >
             <Share2 className="w-4 h-4 text-emerald-400" />
             <span>{isCopiedLink ? 'Tersalin!' : 'Bagikan Link'}</span>
@@ -113,10 +123,10 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
       </div>
 
       {/* Two Key Metric Overview Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 print:gap-3 print:break-inside-avoid">
         {/* Left: STAR Audit Index Circular Gauge */}
-        <div className="lg:col-span-4 rounded-2xl bg-slate-900/90 border border-slate-800 p-6 flex flex-col justify-between shadow-xl relative overflow-hidden">
-          <div className="flex items-center justify-between">
+        <div className="lg:col-span-4 rounded-2xl bg-slate-900/90 border border-slate-800 p-6 print:p-4 flex flex-col justify-between shadow-xl relative overflow-hidden min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-1">
             <span className="text-xs font-mono uppercase tracking-wider text-slate-400 font-bold">
               STAR AUDIT INDEX
             </span>
@@ -127,8 +137,8 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
           </div>
 
           {/* Big Circular Gauge */}
-          <div className="my-6 flex flex-col items-center justify-center">
-            <div className="relative w-44 h-44 flex items-center justify-center">
+          <div className="my-6 print:my-3 flex flex-col items-center justify-center">
+            <div className="relative w-44 h-44 print:w-32 print:h-32 flex items-center justify-center">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 160 160">
                 <circle
                   cx="80"
@@ -153,7 +163,7 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
               </svg>
 
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                <div className="text-4xl font-black text-white font-sans">
+                <div className="text-4xl print:text-3xl font-black text-white font-sans">
                   {evalResult.overallScore}
                 </div>
                 <div className="text-xs font-mono text-slate-400 font-bold">
@@ -162,22 +172,22 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
               </div>
             </div>
 
-            <div className="mt-3 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-extrabold text-sm tracking-wide">
+            <div className="mt-3 px-4 py-1.5 print:px-2.5 print:py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-extrabold text-sm print:text-xs tracking-wide text-center">
               {evalResult.verdict}
             </div>
-            <div className="text-[11px] font-mono text-slate-400 uppercase tracking-wider mt-2">
+            <div className="text-[11px] print:text-[10px] font-mono text-slate-400 uppercase tracking-wider mt-2 text-center">
               TINGKAT KELULUSAN: <span className="text-slate-200 font-bold">{evalResult.overallScore}% REKOMENDASI ({evalResult.tier})</span>
             </div>
           </div>
 
-          <div className="pt-3 border-t border-slate-800/80 text-[11px] text-slate-400 text-center font-mono">
+          <div className="pt-3 border-t border-slate-800/80 text-[11px] print:text-[10px] text-slate-400 text-center font-mono">
             {evalResult.isCustomAnswered ? `Evaluasi ${evalResult.answeredCount} Soal Riil Interview` : 'Benchmark Standar Nasional S-Tier'}
           </div>
         </div>
 
         {/* Right: Diagnostik Persona AI Card */}
-        <div className="lg:col-span-8 rounded-2xl bg-slate-900/90 border border-slate-800 p-6 flex flex-col justify-between shadow-xl space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="lg:col-span-8 rounded-2xl bg-slate-900/90 border border-slate-800 p-6 print:p-4 flex flex-col justify-between shadow-xl space-y-4 print:space-y-3 min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800">
             <span className="text-xs font-mono uppercase tracking-wider text-slate-400 font-bold">
               DIAGNOSTIK PERSONA AI
             </span>
@@ -187,17 +197,17 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
           </div>
 
           {/* Dominant Persona Badge & Quote */}
-          <div className="p-4 rounded-xl bg-purple-950/20 border border-purple-500/30 space-y-2">
+          <div className="p-4 print:p-3 rounded-xl bg-purple-950/20 border border-purple-500/30 space-y-2">
             <div className="flex items-center gap-2">
               <span className="text-base">👑</span>
               <span className="text-xs font-mono uppercase tracking-wider text-purple-400 font-bold">
                 GAYA RESPON DOMINAN
               </span>
             </div>
-            <h3 className="text-base sm:text-lg font-black text-white">
+            <h3 className="text-base sm:text-lg print:text-sm font-black text-white break-words">
               "{evalResult.dominantPersonaTitle}"
             </h3>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed italic">
+            <p className="text-xs sm:text-sm print:text-xs text-slate-300 leading-relaxed italic break-words">
               "{evalResult.dominantPersonaQuote}"
             </p>
           </div>
@@ -207,22 +217,22 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
             <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-bold block">
               EXECUTIVE IMPRESSION SUMMARY
             </span>
-            <p className="text-xs text-slate-300 leading-relaxed">
+            <p className="text-xs text-slate-300 leading-relaxed break-words">
               Kandidat memperlihatkan kematangan teknis akuntansi yang solid dan penguasaan terminologi keuangan standar PSAK secara fasih. Struktur jawaban berorientasi solusi dengan runutan kronologis yang mudah dipahami oleh interviewer HR maupun User Finance. Untuk menjamin penawaran gaji optimal, perkuat hasil kerja akhir dengan angka dampak bisnis konkret seperti persentase efisiensi waktu closing buku bulanan.
             </p>
           </div>
 
           {/* 3 Telemetry Indicators */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-800">
-            <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 print:gap-2 pt-2 border-t border-slate-800">
+            <div className="flex items-center gap-2 text-xs print:text-[11px] font-medium text-slate-300">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
               <span>Pacing Bicara: <strong className="text-white">138 WPM</strong> (Ideal)</span>
             </div>
-            <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
+            <div className="flex items-center gap-2 text-xs print:text-[11px] font-medium text-slate-300">
               <Eye className="w-4 h-4 text-cyan-400 shrink-0" />
               <span>Eye Contact Focus: <strong className="text-white">89%</strong></span>
             </div>
-            <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
+            <div className="flex items-center gap-2 text-xs print:text-[11px] font-medium text-slate-300">
               <Clock className="w-4 h-4 text-purple-400 shrink-0" />
               <span>Total Waktu: <strong className="text-white">24m 12s</strong></span>
             </div>
@@ -231,8 +241,8 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
       </div>
 
       {/* Detail Metrik: Evaluasi 4 Pilar STAR */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 print:space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-bold block">
               DETAIL METRIK
@@ -242,9 +252,9 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
           <span className="text-xs font-mono text-slate-400">Formula Standar Recruiter Global</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-2 gap-4 print:gap-3">
           {/* Situation */}
-          <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3 shadow-lg">
+          <div className="p-5 print:p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3 shadow-lg min-w-0 print:break-inside-avoid">
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono uppercase text-slate-400 font-semibold">PILAR 01</span>
               <span className="text-sm font-black text-emerald-400 font-mono">{evalResult.situationScore}<span className="text-xs text-slate-500">/100</span></span>
@@ -253,7 +263,7 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
             <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
               <div className="bg-emerald-400 h-full rounded-full" style={{ width: `${evalResult.situationScore}%` }} />
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-400 leading-relaxed break-words">
               {evalResult.situationScore >= 85
                 ? 'Sangat jelas dan sistematis dalam menguraikan konteks latar belakang permasalahan bisnis, divisi, dan tantangan awal.'
                 : 'Uraikan latar belakang konteks bisnis dan masalah awal lebih spesifik agar pewawancara memahami urgensinya.'}
@@ -265,7 +275,7 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
           </div>
 
           {/* Task */}
-          <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3 shadow-lg">
+          <div className="p-5 print:p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3 shadow-lg min-w-0 print:break-inside-avoid">
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono uppercase text-slate-400 font-semibold">PILAR 02</span>
               <span className="text-sm font-black text-blue-400 font-mono">{evalResult.taskScore}<span className="text-xs text-slate-500">/100</span></span>
@@ -274,7 +284,7 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
             <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
               <div className="bg-blue-400 h-full rounded-full" style={{ width: `${evalResult.taskScore}%` }} />
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-400 leading-relaxed break-words">
               {evalResult.taskScore >= 80
                 ? 'Tanggung jawab individu dipaparkan lugas. Rekruiter memahami persis batas peranmu vs rekan satu departemen.'
                 : 'Tegaskan batas tanggung jawab pribadi vs peran tim agar kontribusi nyata Anda terlihat jelas.'}
@@ -286,7 +296,7 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
           </div>
 
           {/* Action */}
-          <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3 shadow-lg">
+          <div className="p-5 print:p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3 shadow-lg min-w-0 print:break-inside-avoid">
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono uppercase text-slate-400 font-semibold">PILAR 03</span>
               <span className="text-sm font-black text-teal-400 font-mono">{evalResult.actionScore}<span className="text-xs text-slate-500">/100</span></span>
@@ -295,7 +305,7 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
             <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
               <div className="bg-teal-400 h-full rounded-full" style={{ width: `${evalResult.actionScore}%` }} />
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-400 leading-relaxed break-words">
               {evalResult.actionScore >= 80
                 ? 'Langkah konkrit, tahapan inisiatif, dan penerapan tools/software terurai dengan rincian operasional yang rapi.'
                 : 'Sebutkan software/tools spesifik dan metodologi langkah kerja yang Anda gunakan untuk menyelesaikan tugas.'}
@@ -307,7 +317,7 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
           </div>
 
           {/* Result */}
-          <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3 shadow-lg">
+          <div className="p-5 print:p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3 shadow-lg min-w-0 print:break-inside-avoid">
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono uppercase text-slate-400 font-semibold">PILAR 04</span>
               <span className="text-sm font-black text-purple-400 font-mono">{evalResult.resultScore}<span className="text-xs text-slate-500">/100</span></span>
@@ -316,7 +326,7 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
             <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
               <div className="bg-purple-400 h-full rounded-full" style={{ width: `${evalResult.resultScore}%` }} />
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-400 leading-relaxed break-words">
               {evalResult.resultScore >= 85
                 ? 'Hasil terukur sangat baik, mencakup angka persentase dampak bisnis yang meyakinkan hiring manager.'
                 : 'Perlu diperkuat metrik kuantitatif. Hasil masih cenderung deskriptif dibanding angka konkret (% saving / waktu selesai).'}
@@ -330,9 +340,9 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
       </div>
 
       {/* Poin Kekuatan & Area Perbaikan */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:gap-3 print:break-inside-avoid">
         {/* Poin Kekuatan Utama */}
-        <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-4 shadow-xl">
+        <div className="p-6 print:p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-4 shadow-xl min-w-0">
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
               <CheckCircle2 className="w-4 h-4" />
@@ -348,21 +358,21 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
           <div className="space-y-3 text-xs">
             <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
               <h4 className="font-bold text-slate-200">Artikulasi Percaya Diri & Terkontrol</h4>
-              <p className="text-slate-400 leading-relaxed">
+              <p className="text-slate-400 leading-relaxed break-words">
                 Vokal stabil, intonasi tenang saat dihadapkan pada pertanyaan jebakan terkait salah hitung neraca.
               </p>
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
               <h4 className="font-bold text-slate-200">Ketepatan Terminologi Akuntansi</h4>
-              <p className="text-slate-400 leading-relaxed">
+              <p className="text-slate-400 leading-relaxed break-words">
                 Menggunakan istilah teknis secara tepat (seperti "Amortisasi", "Rekonsiliasi Bank 3-Way Match", "Audit Trail").
               </p>
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
               <h4 className="font-bold text-slate-200">Problem Solving Sistematis</h4>
-              <p className="text-slate-400 leading-relaxed">
+              <p className="text-slate-400 leading-relaxed break-words">
                 Bisa memecah insiden audit rumit menjadi urutan verifikasi dokumen yang masuk akal dan mudah diimplementasikan tim.
               </p>
             </div>
@@ -370,7 +380,7 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
         </div>
 
         {/* Area Perbaikan Kritis */}
-        <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-4 shadow-xl">
+        <div className="p-6 print:p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-4 shadow-xl min-w-0">
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
               <TrendingUp className="w-4 h-4" />
@@ -386,21 +396,21 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
           <div className="space-y-3 text-xs">
             <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
               <h4 className="font-bold text-slate-200">Tambahkan Metrik % Efisiensi Kuantitatif</h4>
-              <p className="text-slate-400 leading-relaxed">
+              <p className="text-slate-400 leading-relaxed break-words">
                 Ganti kalimat "proses jadi lebih cepat" dengan format terukur: "mempercepat periode closing bulanan dari 5 hari kerja menjadi 2 hari (hemat 60%)".
               </p>
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
               <h4 className="font-bold text-slate-200">Kurangi Filler Words ('Eh', 'Hmm')</h4>
-              <p className="text-slate-400 leading-relaxed">
+              <p className="text-slate-400 leading-relaxed break-words">
                 Terdeteksi 18 kali jeda filler pada babak transisi Q3 dan Q7. Ambil jeda diam 1 detik daripada menggumam untuk kesan lebih berwibawa.
               </p>
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
               <h4 className="font-bold text-slate-200">Perjelas Batas "Saya" vs "Tim Kami"</h4>
-              <p className="text-slate-400 leading-relaxed">
+              <p className="text-slate-400 leading-relaxed break-words">
                 Gunakan kata ganti "Saya" saat menceritakan keputusan krusial penulisan jurnal penyesuaian agar kontribusi individual tidak kabur.
               </p>
             </div>
@@ -409,8 +419,8 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
       </div>
 
       {/* Studi Kasus Pembelajaran: Rekomendasi Jawaban Emas STAR */}
-      <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-5 shadow-xl">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+      <div className="p-6 print:p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-5 shadow-xl min-w-0 print:break-inside-avoid">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800">
           <div>
             <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-400 font-bold block">
               STUDI KASUS PEMBELAJARAN
@@ -427,20 +437,20 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
           <div className="p-1.5 rounded-md bg-blue-600/20 text-blue-400 shrink-0">
             <span className="text-xs font-mono font-bold">?</span>
           </div>
-          <div>
+          <div className="min-w-0">
             <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-semibold block">
               PERTANYAAN PEWAWANCARA (USER MANAGER)
             </span>
-            <p className="text-xs sm:text-sm font-semibold text-slate-100 mt-0.5">
+            <p className="text-xs sm:text-sm font-semibold text-slate-100 mt-0.5 break-words">
               "Ceritakan pengalaman ketika Anda menemukan selisih saldo signifikan saat proses rekonsiliasi akhir bulan dan bagaimana Anda mengatasinya?"
             </p>
           </div>
         </div>
 
         {/* Comparison: Transkrip Aslimu vs Jawaban Versi Pro */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 print:gap-3">
           {/* Asli */}
-          <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 flex flex-col justify-between space-y-4">
+          <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 flex flex-col justify-between space-y-4 min-w-0">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-300">Transkrip Aslimu</span>
@@ -448,7 +458,7 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
                   Skor: 75/100
                 </span>
               </div>
-              <p className="text-xs text-slate-400 italic leading-relaxed">
+              <p className="text-xs text-slate-400 italic leading-relaxed break-words">
                 "Waktu itu di kantor lama, ada selisih sekitar belasan juta waktu closing bulanan. Saya cek lagi nota-nota dan bukti transfer di ordner kas kecil. Setelah seharian diteliti bersama tim admin, ternyata ada invoice vendor logistik yang ke-dobel input karena beda admin. Lalu kami buat jurnal koreksi pembalik dan closing bisa kelar."
               </p>
             </div>
@@ -460,9 +470,9 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
           </div>
 
           {/* Versi Pro */}
-          <div className="p-4 rounded-xl bg-blue-950/20 border border-blue-500/40 flex flex-col justify-between space-y-4">
+          <div className="p-4 rounded-xl bg-blue-950/20 border border-blue-500/40 flex flex-col justify-between space-y-4 min-w-0">
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-1">
                 <span className="text-xs font-bold text-cyan-300 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5" />
                   Jawaban Versi Pro (AI Enhanced Script)
@@ -472,7 +482,7 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
                 </span>
               </div>
 
-              <div className="space-y-2 text-xs leading-relaxed">
+              <div className="space-y-2 text-xs leading-relaxed break-words">
                 <div>
                   <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold font-mono mr-1.5 border border-emerald-500/30">
                     [SITUATION]
@@ -520,8 +530,8 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
       </div>
 
       {/* Evaluasi Per Pertanyaan (Q1 – Q10) Accordion */}
-      <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-4 shadow-xl">
-        <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+      <div className="p-6 print:p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-4 shadow-xl min-w-0">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800">
           <div>
             <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block">
               TRANSKRIP & CATATAN GILIRAN
@@ -552,13 +562,13 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
             return (
               <div
                 key={q.id}
-                className="rounded-xl border border-slate-800 bg-slate-950/70 overflow-hidden transition-colors"
+                className="rounded-xl border border-slate-800 bg-slate-950/70 overflow-hidden transition-colors print:break-inside-avoid"
               >
                 <div
                   onClick={() => setExpandedQuestion(isExpanded ? null : q.id)}
                   className="p-3.5 flex items-center justify-between gap-3 cursor-pointer hover:bg-slate-900/60 transition-colors"
                 >
-                  <div className="flex items-center gap-3 overflow-hidden">
+                  <div className="flex items-center gap-3 overflow-hidden min-w-0">
                     <span className={`px-2 py-0.5 rounded font-bold font-mono text-xs border shrink-0 ${
                       displayScore >= 80 
                         ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20' 
@@ -568,7 +578,7 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
                     }`}>
                       {displayScore}/100
                     </span>
-                    <div className="truncate">
+                    <div className="truncate print:whitespace-normal print:overflow-visible min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wide block">
                           PERTANYAAN {q.questionNumber < 10 ? `0${q.questionNumber}` : q.questionNumber}
@@ -579,7 +589,7 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
                           </span>
                         )}
                       </div>
-                      <p className="text-xs font-semibold text-slate-200 truncate">
+                      <p className="text-xs font-semibold text-slate-200 truncate print:whitespace-normal print:overflow-visible">
                         "{q.questionText}"
                       </p>
                     </div>
