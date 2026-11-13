@@ -334,9 +334,13 @@ export const Header: React.FC<HeaderProps> = ({ currentStep, onSelectStep }) => 
                             </div>
                           </td>
                           <td className="border border-slate-300 p-3 text-slate-900">
-                            <div className="font-extrabold text-blue-700">Rp 9.051 <span className="font-normal text-slate-700">/ Sesi Penuh</span></div>
+                            <div className="text-xs text-slate-400 line-through font-semibold">Rp 25.000</div>
+                            <div className="font-extrabold text-blue-700 text-base">Rp. 9.000 <span className="font-normal text-xs sm:text-sm text-slate-700">/ Sesi Penuh</span></div>
+                            <div className="inline-block mt-1 px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[11px]">
+                              Hemat Rp 16.000
+                            </div>
                             <div className="text-xs text-slate-600 mt-1.5 leading-snug">
-                              (Konversi otomatis dari $0,5 USD dengan kurs <em>realtime</em> Rp 18.102; ditagihkan &amp; dibayar penuh dalam Rupiah via QRIS)
+                              (Ditagihkan &amp; dibayar penuh dalam Rupiah sebesar Rp. 9.000 via QRIS)
                             </div>
                           </td>
                         </tr>
@@ -450,10 +454,10 @@ export const Header: React.FC<HeaderProps> = ({ currentStep, onSelectStep }) => 
                         , mengisi nama, memilih bidang pekerjaan, melakukan uji mikrofon/speaker, dan menjawab 3 pertanyaan simulasi pertama secara gratis.
                       </li>
                       <li>
-                        <strong>Penawaran &amp; Checkout:</strong> Setelah menyelesaikan 3 pertanyaan gratis, sistem menampilkan jendela konfirmasi <strong>Paket Sesi Instan Pro</strong> dengan rincian harga dalam mata uang Rupiah sebesar <strong>Rp 9.051</strong> (konversi dari $0,5 USD).
+                        <strong>Penawaran &amp; Checkout:</strong> Setelah menyelesaikan 3 pertanyaan gratis, sistem menampilkan jendela konfirmasi <strong>Paket Sesi Instan Pro</strong> dengan rincian harga dalam mata uang Rupiah sebesar <strong>Rp. 9.000</strong> (harga promo dari Rp 25.000 — Hemat Rp 16.000).
                       </li>
                       <li>
-                        <strong>Pembayaran via QRIS:</strong> Pelanggan menekan tombol <em>&quot;Bayar Instan dengan QRIS (Rp 9.051 / $ 0,5)&quot;</em> dan memindai kode QRIS yang tampil di layar menggunakan aplikasi <em>e-wallet</em> atau <em>mobile banking</em> (GoPay, OVO, Dana, BCA Mobile, Livin&apos; Mandiri, dll.).
+                        <strong>Pembayaran via QRIS:</strong> Pelanggan menekan tombol <em>&quot;Bayar Instan dengan QRIS Rp. 9.000&quot;</em> dan memindai kode QRIS yang tampil di layar menggunakan aplikasi <em>e-wallet</em> atau <em>mobile banking</em> (GoPay, OVO, Dana, BCA Mobile, Livin&apos; Mandiri, dll.).
                       </li>
                       <li>
                         <strong>Aktivasi &amp; Pengiriman Produk Digital Instan:</strong> Begitu pembayaran berhasil diverifikasi secara otomatis, sesi pertanyaan ke-4 hingga ke-10 langsung terbuka. Setelah seluruh pertanyaan dijawab, pelanggan langsung menerima hasil <strong>Diagnostic</strong> serta dapat mengunduh <strong>STAR Report (PDF)</strong> dan <strong>Scorecard (JPG/PNG)</strong> secara langsung dari aplikasi.
