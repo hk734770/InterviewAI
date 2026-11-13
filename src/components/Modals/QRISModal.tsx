@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, CheckCircle2, Shield, QrCode, Clock, Check, RefreshCw } from 'lucide-react';
+import { X, CheckCircle2, Clock, Flame } from 'lucide-react';
 import { playSuccessDing } from '../../utils/soundEffects';
-import { useLiveExchangeRate, BASE_USD_PRICE } from '../../utils/currency';
 
 interface QRISModalProps {
   isOpen: boolean;
@@ -14,16 +13,6 @@ export const QRISModal: React.FC<QRISModalProps> = ({
   onClose,
   onPaymentSuccess,
 }) => {
-  const {
-    formattedRate,
-    formattedIdr,
-    formattedUsd,
-    isLive,
-    lastUpdated,
-    isLoading,
-    refreshRate,
-  } = useLiveExchangeRate(BASE_USD_PRICE);
-
   const [timeLeft, setTimeLeft] = useState(899); // 14:59
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -63,7 +52,7 @@ export const QRISModal: React.FC<QRISModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition-colors"
+            className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -73,32 +62,23 @@ export const QRISModal: React.FC<QRISModalProps> = ({
         <div className="flex flex-col items-center mt-4 mb-4">
           <div className="text-center mb-3">
             <p className="text-xs text-slate-400">Total Tagihan</p>
-            <div className="flex items-baseline justify-center gap-1.5 mt-0.5">
-              <span className="text-3xl font-black text-white font-mono tracking-tight">{formattedUsd}</span>
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">USD</span>
+            <div className="flex items-baseline justify-center gap-2.5 mt-1">
+              <span className="text-base font-bold text-slate-400 line-through decoration-rose-500/90 decoration-2 font-mono">
+                Rp25.000
+              </span>
+              <span className="text-3xl font-black text-emerald-400 font-mono tracking-tight drop-shadow-[0_0_12px_rgba(52,211,153,0.45)]">
+                Rp9.000
+              </span>
             </div>
 
-            {/* Konversi ke Rupiah Container */}
-            <div className="inline-flex flex-col items-center mt-2 px-3.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">
-              <div className="flex items-center gap-1.5 font-bold text-sm">
-                <span>Konversi Rupiah:</span>
-                <span className="text-base font-black font-mono">{formattedIdr}</span>
-              </div>
-              <div className="flex items-center gap-1 text-[10px] text-emerald-400/80 font-medium">
-                <span>(Kurs realtime saat dibuka: $1 USD = {formattedRate})</span>
-                <button
-                  onClick={() => refreshRate()}
-                  title="Perbarui Kurs"
-                  className="p-0.5 text-emerald-400/80 hover:text-white transition-colors"
-                >
-                  <RefreshCw className={`w-2.5 h-2.5 ${isLoading ? 'animate-spin text-cyan-400' : ''}`} />
-                </button>
-              </div>
+            <div className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-slate-950 font-black text-xs shadow-md">
+              <Flame className="w-3.5 h-3.5 text-amber-950 fill-amber-300" />
+              <span>Hemat Rp16.000</span>
             </div>
 
             <p className="text-[11px] text-slate-300 mt-2 font-medium">
               Jumlah yang Anda bayarkan di e-wallet/bank:{' '}
-              <span className="text-white font-bold font-mono">{formattedIdr}</span>
+              <span className="text-emerald-400 font-bold font-mono">Rp. 9.000</span>
             </p>
             <p className="text-[11px] text-cyan-400 mt-0.5">Merchant: INTERVIEWAI SIMULATION PRO</p>
           </div>
@@ -152,7 +132,7 @@ export const QRISModal: React.FC<QRISModalProps> = ({
 
             <div className="w-full text-center mt-2 pt-1 border-t border-slate-200">
               <span className="text-[10px] text-slate-500 font-mono tracking-wider">NMID: ID1020084920199</span>
-              <div className="text-[10px] font-bold text-slate-700">Nominal: {formattedIdr} ({formattedUsd} USD)</div>
+              <div className="text-[10px] font-bold text-slate-700">Nominal: Rp. 9.000</div>
             </div>
           </div>
 
@@ -165,21 +145,21 @@ export const QRISModal: React.FC<QRISModalProps> = ({
 
         {/* Instructions */}
         <p className="text-xs text-slate-400 text-center mb-4 leading-relaxed">
-          Buka aplikasi GoPay, OVO, Dana, BCA Mobile, atau Livin Mandiri, lalu scan kode QR di atas untuk membayar <span className="text-white font-semibold">{formattedIdr}</span> (setara <span className="text-white font-semibold">{formattedUsd} USD</span>).
+          Buka aplikasi GoPay, OVO, Dana, BCA Mobile, atau Livin Mandiri, lalu scan kode QR di atas untuk membayar <span className="text-emerald-400 font-bold">Rp. 9.000</span>.
         </p>
 
         {/* Demo Fast Trigger Button */}
         <button
           onClick={handleSimulatePayment}
           disabled={isProcessing}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition-all shadow-lg shadow-emerald-600/30 active:scale-[0.98]"
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition-all shadow-lg shadow-emerald-600/30 active:scale-[0.98] cursor-pointer"
         >
           {isProcessing ? (
             <span className="animate-spin">⏳</span>
           ) : (
             <CheckCircle2 className="w-4 h-4" />
           )}
-          <span>{isProcessing ? 'Memverifikasi Pembayaran...' : `Simulasi Bayar Berhasil: ${formattedIdr} (${formattedUsd})`}</span>
+          <span>{isProcessing ? 'Memverifikasi Pembayaran...' : 'Simulasi Bayar Berhasil: Rp. 9.000'}</span>
         </button>
 
         <div className="mt-3 text-center">
