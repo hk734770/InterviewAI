@@ -98,8 +98,16 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
           <button
+            onClick={onRetakeInterview}
+            className="group flex items-center gap-2 px-4 sm:px-5 py-2.5 print:px-3 print:py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 hover:from-emerald-400 hover:via-teal-300 hover:to-cyan-300 text-slate-950 text-xs sm:text-sm font-black transition-all shadow-lg shadow-emerald-500/30 border-2 border-white/70 ring-2 ring-emerald-400/30 hover:scale-105 active:scale-95 cursor-pointer"
+            title="Ulangi Simulasi Interview dari Awal untuk Meningkatkan Skor STAR"
+          >
+            <RotateCcw className="w-4 h-4 text-slate-950 stroke-[2.5] group-hover:-rotate-180 transition-transform duration-500" />
+            <span>Latihan Lagi 🔥</span>
+          </button>
+          <button
             onClick={onGoToScorecard}
-            className="flex items-center gap-1.5 px-4 py-2.5 print:px-3 print:py-1.5 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white text-xs font-bold transition-all shadow-md shadow-pink-600/25 hover:scale-105 active:scale-95"
+            className="flex items-center gap-1.5 px-4 py-2.5 print:px-3 print:py-1.5 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white text-xs font-bold transition-all shadow-md shadow-pink-600/25 hover:scale-105 active:scale-95 cursor-pointer"
             title="Lihat Scorecard Gaul 9:16 untuk Instagram / WhatsApp"
           >
             <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
@@ -107,14 +115,14 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
           </button>
           <button
             onClick={handleDownloadPDF}
-            className="flex items-center gap-1.5 px-3.5 py-2.5 print:px-3 print:py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-xs font-bold transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2.5 print:px-3 print:py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-xs font-bold transition-colors cursor-pointer"
           >
             <Download className="w-4 h-4 text-cyan-400" />
             <span>PDF</span>
           </button>
           <button
             onClick={handleShareLink}
-            className="flex items-center gap-1.5 px-3.5 py-2.5 print:px-3 print:py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-xs font-bold transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2.5 print:px-3 print:py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-xs font-bold transition-colors cursor-pointer"
           >
             <Share2 className="w-4 h-4 text-emerald-400" />
             <span>{isCopiedLink ? 'Tersalin!' : 'Bagikan Link'}</span>
@@ -643,34 +651,50 @@ export const S05STARReport: React.FC<S05STARReportProps> = ({
       </div>
 
       {/* Bottom Showcase Bar */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-950/60 via-slate-900 to-slate-950 border border-blue-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-blue-600/20 text-blue-400">
-            <Sparkles className="w-6 h-6 animate-pulse" />
+      <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-blue-950/80 via-slate-900 to-emerald-950/60 border-2 border-cyan-500/40 flex flex-col lg:flex-row items-center justify-between gap-5 shadow-2xl">
+        <div className="flex items-center gap-3.5">
+          <div className="p-3 rounded-2xl bg-gradient-to-tr from-blue-600/30 to-emerald-500/30 border border-cyan-400/30 text-cyan-300 shadow-inner">
+            <Sparkles className="w-7 h-7 animate-pulse" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-white">Hasil STAR Anda Siap Dipamerkan</h4>
-            <p className="text-xs text-slate-400">
-              Konversi otomatis ke format kartu Instagram Story 9:16 resolusi tinggi
+            <h4 className="text-base sm:text-lg font-extrabold text-white">
+              Hasil STAR Anda Siap Dipamerkan atau Ditingkatkan Lagi!
+            </h4>
+            <p className="text-xs sm:text-sm text-slate-300 mt-0.5">
+              Ulangi latihan wawancara untuk menembus skor S+ atau konversi ke kartu Instagram Story 9:16 resolusi tinggi
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 w-full lg:w-auto shrink-0">
           <button
             onClick={onRetakeInterview}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors"
+            className="group relative flex-1 sm:flex-initial flex items-center justify-center gap-3 px-6 sm:px-7 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 hover:from-emerald-300 hover:via-teal-300 hover:to-cyan-300 text-slate-950 font-black text-sm sm:text-base shadow-xl shadow-emerald-500/35 hover:shadow-2xl hover:shadow-emerald-400/50 border-2 border-white/90 ring-4 ring-emerald-500/25 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
           >
-            <RotateCcw className="w-4 h-4" />
-            <span>Latihan Lagi</span>
+            <div className="w-9 h-9 rounded-xl bg-slate-950/15 flex items-center justify-center shadow-inner shrink-0">
+              <RotateCcw className="w-5 h-5 text-slate-950 stroke-[2.75] group-hover:-rotate-180 transition-transform duration-500" />
+            </div>
+            <div className="text-left leading-tight">
+              <div className="flex items-center gap-2">
+                <span className="text-sm sm:text-base font-black uppercase tracking-tight text-slate-950">
+                  Latihan Lagi 🔥
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-slate-950 text-emerald-300 text-[10px] font-mono font-black shadow-sm">
+                  UPGRADE SKOR ⚡
+                </span>
+              </div>
+              <span className="text-[11px] font-bold text-slate-800 block mt-0.5">
+                Coba Simulasi Baru &amp; Tingkatkan Nilai STAR
+              </span>
+            </div>
           </button>
 
           <button
             onClick={onGoToScorecard}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-xs font-extrabold shadow-lg shadow-blue-500/25 transition-all hover:scale-105 active:scale-95"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:via-indigo-500 hover:to-purple-500 text-white text-sm font-extrabold shadow-xl shadow-blue-500/30 border border-blue-400/40 transition-all hover:scale-105 active:scale-95 cursor-pointer"
           >
             <span>Buat Viral Scorecard 9:16 (IG Story)</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4 shrink-0" />
           </button>
         </div>
       </div>

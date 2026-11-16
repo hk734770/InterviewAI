@@ -166,6 +166,10 @@ export default function App() {
             selectedField={selectedField}
             candidateAnswers={candidateAnswers}
             onBackToReport={() => setCurrentStep('S05')}
+            onRetakeInterview={() => {
+              setCurrentQuestionIndex(0);
+              setCurrentStep('S01');
+            }}
           />
         )}
       </main>

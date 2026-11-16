@@ -19,7 +19,8 @@ import {
   Zap,
   Smile,
   Palette,
-  Image as ImageIcon
+  Image as ImageIcon,
+  RotateCcw
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ShareModal } from './Modals/ShareModal';
@@ -28,6 +29,7 @@ interface S06ScorecardProps {
   candidateName: string;
   selectedField: JobFieldId;
   onBackToReport: () => void;
+  onRetakeInterview?: () => void;
   candidateAnswers?: Record<number, string>;
 }
 
@@ -204,6 +206,7 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
   candidateName,
   selectedField,
   onBackToReport,
+  onRetakeInterview,
   candidateAnswers = {},
 }) => {
   const [vibeTemplate, setVibeTemplate] = useState<VibeTemplate>('neon');
@@ -378,9 +381,21 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
           <span className="text-slate-600 font-mono">/ GEN-Z EDITION</span>
         </button>
 
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-cyan-500/10 border border-pink-500/30 text-xs font-bold text-pink-400 self-start sm:self-auto shadow-sm">
-          <PartyPopper className="w-3.5 h-3.5 text-pink-400 animate-bounce" />
-          <span>SCORECARD GAUL & VIRAL READY (9:16)</span>
+        <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
+          {onRetakeInterview && (
+            <button
+              onClick={onRetakeInterview}
+              className="group flex items-center gap-2 px-4 sm:px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 hover:from-emerald-400 hover:via-teal-300 hover:to-cyan-300 text-slate-950 text-xs sm:text-sm font-black transition-all shadow-lg shadow-emerald-500/30 border-2 border-white/70 ring-2 ring-emerald-400/30 hover:scale-105 active:scale-95 cursor-pointer"
+              title="Ulangi Simulasi Interview dari Awal untuk Meningkatkan Skor STAR"
+            >
+              <RotateCcw className="w-4 h-4 text-slate-950 stroke-[2.5] group-hover:-rotate-180 transition-transform duration-500" />
+              <span>Latihan Lagi 🔥</span>
+            </button>
+          )}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-cyan-500/10 border border-pink-500/30 text-xs font-bold text-pink-400 shadow-sm">
+            <PartyPopper className="w-3.5 h-3.5 text-pink-400 animate-bounce" />
+            <span>SCORECARD GAUL &amp; VIRAL READY (9:16)</span>
+          </div>
         </div>
       </div>
 
@@ -836,7 +851,7 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
           </button>
 
           {/* Quick Dual Download Buttons below phone mockup */}
-          <div className="w-full max-w-[360px] grid grid-cols-2 gap-2 mt-2">
+          <div className="w-full max-w-[420px] grid grid-cols-2 gap-2 mt-2">
             <button
               onClick={handleDownloadJPG}
               className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold text-xs transition-colors shadow cursor-pointer"
@@ -854,6 +869,33 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
               <span>Unduh PNG</span>
             </button>
           </div>
+
+          {/* Eye-Catching Latihan Lagi Button below Phone Mockup */}
+          {onRetakeInterview && (
+            <button
+              onClick={onRetakeInterview}
+              className="w-full max-w-[420px] mt-3 group relative flex items-center justify-between gap-3 py-3.5 px-4.5 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 hover:from-emerald-300 hover:via-teal-300 hover:to-cyan-300 text-slate-950 font-black shadow-xl shadow-emerald-500/30 hover:shadow-2xl hover:shadow-emerald-400/50 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border-2 border-white/90 ring-4 ring-emerald-500/20"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-slate-950/15 flex items-center justify-center shadow-inner shrink-0">
+                  <RotateCcw className="w-5 h-5 text-slate-950 stroke-[2.75] group-hover:-rotate-180 transition-transform duration-500" />
+                </div>
+                <div className="text-left leading-tight">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm sm:text-base font-black block tracking-tight uppercase text-slate-950">
+                      Latihan Lagi 🔥
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-800 font-bold block mt-0.5">
+                    Ulangi Simulasi &amp; Kejar Skor STAR S+
+                  </span>
+                </div>
+              </div>
+              <span className="text-[10px] px-2.5 py-1.5 rounded-xl bg-slate-950 text-emerald-300 font-mono font-black shadow-md shrink-0 uppercase tracking-tight">
+                UPGRADE ⚡
+              </span>
+            </button>
+          )}
         </div>
 
         {/* Right Column: Active Tab Content (Stiker, Vibe, Export) */}
@@ -1134,6 +1176,47 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
               </p>
             </div>
           </div>
+
+          {/* Bottom Showcase Card on S06 Scorecard with Big Eye-Catching Latihan Lagi Button */}
+          {onRetakeInterview && (
+            <div className="p-5 rounded-2xl bg-gradient-to-r from-emerald-950/70 via-slate-900 to-blue-950/70 border-2 border-emerald-500/40 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl mt-2">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 shrink-0">
+                  <RotateCcw className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="text-sm sm:text-base font-extrabold text-white">
+                    Ingin Coba Bidang Pekerjaan Lain atau Tingkatkan Skor?
+                  </h4>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    Mulai sesi latihan baru sekarang dan dapatkan gelar Persona S+ di Scorecard berikutnya!
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={onRetakeInterview}
+                className="group relative w-full sm:w-auto flex items-center justify-center gap-3 px-6 sm:px-7 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 hover:from-emerald-300 hover:via-teal-300 hover:to-cyan-300 text-slate-950 font-black text-sm sm:text-base shadow-xl shadow-emerald-500/35 hover:shadow-2xl hover:shadow-emerald-400/50 border-2 border-white/90 ring-4 ring-emerald-500/25 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shrink-0"
+              >
+                <div className="w-9 h-9 rounded-xl bg-slate-950/15 flex items-center justify-center shadow-inner shrink-0">
+                  <RotateCcw className="w-5 h-5 text-slate-950 stroke-[2.75] group-hover:-rotate-180 transition-transform duration-500" />
+                </div>
+                <div className="text-left leading-tight">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm sm:text-base font-black uppercase tracking-tight text-slate-950">
+                      Latihan Lagi 🔥
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-slate-950 text-emerald-300 text-[10px] font-mono font-black shadow-sm">
+                      GASPOL ⚡
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-bold text-slate-800 block mt-0.5">
+                    Ulangi Interview dari Awal
+                  </span>
+                </div>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
