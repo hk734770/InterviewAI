@@ -183,8 +183,8 @@ export const PhotorealisticFemaleAvatar: React.FC<PhotorealisticFemaleAvatarProp
       {/* Zoom Video Container Frame */}
       <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
         <div 
-          className={`relative w-full h-full aspect-[4/3] sm:aspect-video flex items-center justify-center overflow-hidden transition-all duration-300 ${
-            isVideoPlaying || isSpeaking ? 'scale-[1.008]' : 'scale-100'
+          className={`relative w-full h-full flex items-center justify-center overflow-hidden transition-all duration-300 ${
+            isVideoPlaying || isSpeaking ? 'scale-[1.005]' : 'scale-100'
           }`}
         >
           {!videoError ? (
@@ -203,7 +203,7 @@ export const PhotorealisticFemaleAvatar: React.FC<PhotorealisticFemaleAvatarProp
                 console.warn('Video load fallback triggered for', effectiveSrc);
                 setVideoError(true);
               }}
-              className="w-full h-full object-cover object-center filter brightness-[1.02] contrast-[1.03]"
+              className="w-full h-full object-cover object-[50%_18%] filter brightness-[1.02] contrast-[1.03]"
             />
           ) : (
             /* Fallback Photo if Video Not Found */
@@ -285,15 +285,15 @@ export const PhotorealisticFemaleAvatar: React.FC<PhotorealisticFemaleAvatarProp
         </div>
       </div>
 
-      {/* Bottom Floating Equalizer: Active Speaking Wave vs Listening Status */}
+      {/* Top Left Floating Equalizer: Active Speaking Wave vs Listening Status (Tidak bertabrakan dengan PiP & Nama di bawah) */}
       {isVideoPlaying || isSpeaking ? (
-        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-950/90 border border-emerald-500/60 backdrop-blur-md shadow-2xl shadow-emerald-500/20 animate-fadeIn">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-          <span className="text-xs font-bold text-emerald-400 font-mono tracking-wider uppercase">
+        <div className="absolute top-3 left-3 z-30 flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/90 border border-emerald-500/60 backdrop-blur-md shadow-xl shadow-emerald-500/20 animate-fadeIn">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+          <span className="text-[11px] font-bold text-emerald-400 font-mono tracking-wider uppercase whitespace-nowrap">
             {interviewerName} Sedang Berbicara
           </span>
-          <div className="flex items-center gap-1 ml-1">
-            {[12, 22, 10, 26, 18, 14, 24, 16, 20, 8].map((barHeight, idx) => (
+          <div className="flex items-center gap-0.5 ml-0.5">
+            {[10, 18, 8, 20, 14, 12, 18, 12, 16, 8].map((barHeight, idx) => (
               <span
                 key={idx}
                 className="w-1 bg-gradient-to-t from-emerald-500 to-cyan-400 rounded-full animate-pulse"
@@ -307,7 +307,7 @@ export const PhotorealisticFemaleAvatar: React.FC<PhotorealisticFemaleAvatarProp
           </div>
         </div>
       ) : (
-        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-950/80 border border-cyan-500/40 backdrop-blur-md shadow-lg text-[11px] font-medium text-cyan-300">
+        <div className="absolute top-3 left-3 z-30 flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/85 border border-cyan-500/40 backdrop-blur-md shadow-lg text-[11px] font-medium text-cyan-300">
           <Headphones className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
           <span>{interviewerName} Mendengarkan Jawabanmu...</span>
         </div>

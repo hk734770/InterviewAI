@@ -871,9 +871,9 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
   };
 
   return (
-    <div className="w-full max-w-[1550px] mx-auto px-2 sm:px-4 py-2 space-y-2 animate-fadeIn flex flex-col h-[calc(min(100vh,860px)-75px)] min-h-[720px]">
+    <div className="w-full max-w-[1550px] mx-auto px-2 sm:px-3 py-1.5 space-y-1.5 animate-fadeIn flex flex-col h-[calc(100dvh-54px)] min-h-[400px] max-h-[840px] overflow-hidden">
       {/* Zoom Meeting Top Status Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs shadow-lg">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs shadow-lg shrink-0">
         {/* Left: Recording & Zoom Meeting ID */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 font-bold font-mono">
@@ -953,11 +953,11 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
       </div>
 
       {/* Main Split: Left Zoom Meeting Window & Right Real-Time Transcript / AI Coach */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1 min-h-0">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2.5 flex-1 min-h-0">
         {/* Left Column: Zoom Video Call Chamber */}
-        <div className={`${isChatOpen ? 'lg:col-span-8' : 'lg:col-span-12'} rounded-2xl bg-slate-950 border border-slate-800 flex flex-col overflow-hidden relative shadow-2xl transition-all duration-300`}>
+        <div className={`${isChatOpen ? 'lg:col-span-8' : 'lg:col-span-12'} rounded-2xl bg-slate-950 border border-slate-800 flex flex-col overflow-hidden relative shadow-2xl transition-all duration-300 min-h-0`}>
           {/* Zoom In-Call Header Bar */}
-          <div className="px-4 py-2 bg-slate-950/90 backdrop-blur-md border-b border-slate-800 flex items-center justify-between text-xs z-30">
+          <div className="px-3 py-1.5 bg-slate-950/90 backdrop-blur-md border-b border-slate-800 flex items-center justify-between text-xs z-30 shrink-0">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
               <span className="font-mono text-slate-300 font-semibold">
@@ -989,7 +989,7 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
           </div>
 
           {/* Video Container (Speaker View vs Gallery View) */}
-          <div className="relative flex-1 w-full h-full min-h-[380px] bg-slate-950 overflow-hidden">
+          <div className="relative flex-1 w-full h-full min-h-0 bg-slate-950 overflow-hidden">
             {viewMode === 'speaker' ? (
               /* SPEAKER VIEW: Jessica Pratama as Main Tile + Candidate Live Video PIP */
               <div className="relative w-full h-full flex items-center justify-center">
@@ -1017,7 +1017,7 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
                 </div>
 
                 {/* Jessica Pratama Zoom Name Badge */}
-                <div className="absolute bottom-4 left-4 z-30 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-950/85 backdrop-blur-md border border-slate-800 text-xs text-white font-medium shadow-xl">
+                <div className="absolute bottom-3 left-3 z-30 flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-950/85 backdrop-blur-md border border-slate-800 text-xs text-white font-medium shadow-xl">
                   <div className="flex items-center gap-1">
                     <Mic className={`w-3.5 h-3.5 ${isInterviewerSpeaking ? 'text-emerald-400' : 'text-slate-400'}`} />
                     {isInterviewerSpeaking && (
@@ -1034,7 +1034,7 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
                 </div>
 
                 {/* Candidate Zoom Picture-in-Picture (PIP) Window with LIVE CAMERA & MIC FEED */}
-                <div className="absolute bottom-4 right-4 z-30 w-44 sm:w-60 aspect-[4/3] rounded-xl bg-slate-900/95 border-2 border-emerald-500/60 shadow-2xl overflow-hidden backdrop-blur-md flex flex-col justify-between p-2 group ring-2 ring-emerald-500/20">
+                <div className="absolute bottom-3 right-3 z-30 w-40 sm:w-48 max-h-[46%] aspect-[4/3] rounded-xl bg-slate-900/95 border-2 border-emerald-500/60 shadow-2xl overflow-hidden backdrop-blur-md flex flex-col justify-between p-1.5 group ring-2 ring-emerald-500/20">
                   {/* Candidate Header in PIP */}
                   <div className="flex items-center justify-between text-[11px] z-20 bg-slate-950/80 px-2 py-0.5 rounded-md backdrop-blur-sm">
                     <span className="font-bold text-white font-mono uppercase tracking-wide truncate pr-1 flex items-center gap-1">
@@ -1203,9 +1203,9 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
 
         {/* Right Column: In-Meeting Chat & Real-Time Transcript & AI Coach Guidance */}
         {isChatOpen && (
-          <div className="lg:col-span-4 rounded-2xl bg-slate-900/95 border border-slate-800 flex flex-col justify-between overflow-hidden shadow-2xl">
+          <div className="lg:col-span-4 rounded-2xl bg-slate-900/95 border border-slate-800 flex flex-col justify-between overflow-hidden shadow-2xl min-h-0">
             {/* Header */}
-            <div className="px-4 py-3 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between">
+            <div className="px-3 py-2 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
                 <FileText className="w-4 h-4 text-cyan-400" />
                 <h3 className="text-xs font-bold text-white uppercase tracking-wider">
@@ -1218,7 +1218,7 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
             </div>
 
             {/* Transcript Messages Area */}
-            <div className="p-4 space-y-3.5 overflow-y-auto flex-1 text-xs">
+            <div className="p-2 space-y-1.5 overflow-y-auto flex-1 min-h-0 text-xs">
               {/* Previous Chat exchanges (hanya muncul jika sudah ada soal sebelumnya dan hanya menampilkan jawaban riil interviewee) */}
               {Array.from({ length: currentQuestionIndex }).map((_, prevIdx) => {
                 const prevQ = fieldQuestions[prevIdx];
@@ -1228,12 +1228,12 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
                 const prevAnswer = candidateAnswersHistory[prevIdx];
 
                 return (
-                  <div key={prevIdx} className="space-y-2 border-b border-slate-800/60 pb-3">
+                  <div key={prevIdx} className="space-y-1.5 border-b border-slate-800/60 pb-2">
                     <div className="space-y-1">
                       <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
                         <span className="font-semibold text-slate-300">● Jessica Pratama (HR) • Soal {prevIdx + 1}</span>
                       </div>
-                      <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 text-slate-300 leading-relaxed">
+                      <div className="p-2 rounded-xl bg-slate-950/70 border border-slate-800 text-slate-300 leading-relaxed">
                         "{prevText}"
                       </div>
                     </div>
@@ -1243,7 +1243,7 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
                         <div className="flex items-center justify-between text-[11px] text-emerald-400 font-mono">
                           <span className="font-semibold">● {candidateName || 'Kamu'} (Interviewee)</span>
                         </div>
-                        <div className="p-2.5 rounded-xl bg-blue-950/30 border border-emerald-500/30 text-slate-200 leading-relaxed">
+                        <div className="p-2 rounded-xl bg-blue-950/30 border border-emerald-500/30 text-slate-200 leading-relaxed">
                           "{prevAnswer}"
                         </div>
                       </div>
@@ -1253,30 +1253,30 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
               })}
 
               {/* Currently Active Question from Jessica */}
-              <div className="space-y-1 pt-1">
-                <div className="flex items-center justify-between text-[11px] font-mono text-cyan-400">
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-[10.5px] font-mono text-cyan-400">
                   <span className="font-bold flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
                     ● Jessica Pratama (HR) • Soal {currentQuestionIndex + 1}/10 Aktif
                   </span>
                   <span>{currentQuestionIndex === 0 ? '00:15' : '08:10'}</span>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-950 border-2 border-cyan-500/40 text-white font-medium leading-relaxed shadow-lg shadow-cyan-950/20">
+                <div className="p-2.5 rounded-xl bg-slate-950 border-2 border-cyan-500/40 text-white font-medium text-[11.5px] leading-snug shadow-lg shadow-cyan-950/20">
                   "{currentQuestion.questionText}"
                 </div>
               </div>
 
               {/* Candidate live answering input box */}
-              <div className="space-y-2 pt-2">
-                <div className="flex items-center justify-between text-[11px] font-mono text-emerald-400">
-                  <span className="font-semibold flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    Bicaralah langsung ke mikrofon (jawaban otomatis tertranskrip):
+              <div className="space-y-1.5 pt-0.5">
+                <div className="flex items-center justify-between text-[10.5px] font-mono text-emerald-400">
+                  <span className="font-semibold flex items-center gap-1.5 truncate pr-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                    <span className="truncate">Bicaralah ke mikrofon (otomatis tertranskrip):</span>
                   </span>
-                  <div className="flex items-center gap-2">
-                    <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-[10px] font-bold">LIVE STT</span>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-[9.5px] font-bold">LIVE STT</span>
                     {!isMuted && (
-                      <span className="text-[10px] font-mono text-slate-400">
+                      <span className="text-[9.5px] font-mono text-slate-400">
                         {decibelLevel} dB
                       </span>
                     )}
@@ -1284,35 +1284,35 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
                 </div>
 
                 {/* KOTAK JAWABAN YANG DIJAWAB OLEH YANG DI-INTERVIEW */}
-                <div className="p-3.5 rounded-xl bg-slate-950 border-2 border-emerald-500/60 shadow-lg shadow-emerald-950/40 space-y-2.5">
-                  <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-sm">
+                <div className="p-2.5 rounded-xl bg-slate-950 border-2 border-emerald-500/60 shadow-lg shadow-emerald-950/40 space-y-1.5">
+                  <div className="flex flex-wrap items-center justify-between gap-1.5 pb-1.5 border-b border-slate-800">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-[11px] font-bold text-white shadow-sm shrink-0">
                         {candidateName ? candidateName.charAt(0).toUpperCase() : 'J'}
                       </div>
                       <div>
-                        <span className="text-xs font-bold text-white block leading-none">
+                        <span className="text-[11px] font-bold text-white block leading-none">
                           {candidateName || 'Johan'} (Interviewee)
                         </span>
-                        <span className="text-[10px] text-emerald-400 font-mono">
+                        <span className="text-[9.5px] text-emerald-400 font-mono">
                           Rubah Suara Menjadi Teks
                         </span>
                       </div>
                     </div>
 
                     {/* Tombol Aktifkan Microphone & Rubah Suara Menjadi Teks */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       <button
                         type="button"
                         onClick={handleActivateMicAndSTT}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md active:scale-95 ${
+                        className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all shadow-md active:scale-95 ${
                           !isMuted && isMicActive
                             ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40'
                             : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950/50 animate-pulse'
                         }`}
                         title="Klik untuk mengaktifkan mikrofon dan merubah suara Anda menjadi teks"
                       >
-                        <Mic className={`w-3.5 h-3.5 ${!isMuted && isMicActive ? 'text-emerald-400' : 'text-white'}`} />
+                        <Mic className={`w-3 h-3 ${!isMuted && isMicActive ? 'text-emerald-400' : 'text-white'}`} />
                         <span>
                           {!isMuted && isMicActive
                             ? (isCandidateSpeaking ? '● Suara Sedang Dirubah ke Teks' : 'Microphone Aktif')
@@ -1320,7 +1320,7 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
                         </span>
                       </button>
 
-                      <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-mono text-emerald-400">
+                      <div className="flex items-center gap-1 px-1.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-[9.5px] font-mono text-emerald-400">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                         <span>Live STT</span>
                       </div>
@@ -1328,7 +1328,7 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
                   </div>
 
                   {/* Teks Nyata yang Dijawab oleh Yang Di-interview */}
-                  <div className="p-3 rounded-lg bg-slate-900/95 border border-slate-800 text-slate-100 text-xs sm:text-sm font-medium leading-relaxed font-sans shadow-inner min-h-[95px] flex flex-col justify-center">
+                  <div className="p-2 rounded-lg bg-slate-900/95 border border-slate-800 text-slate-100 text-xs font-medium leading-snug font-sans shadow-inner min-h-[60px] flex flex-col justify-center">
                     <textarea
                       value={candidateSpeechText}
                       onChange={(e) => {
@@ -1342,7 +1342,7 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
                         }
                       }}
                       placeholder="Microphone aktif! Bicaralah sekarang ke mikrofon, suara Anda akan langsung otomatis dirubah menjadi teks di kolom ini..."
-                      rows={3}
+                      rows={2}
                       className="w-full bg-transparent border-0 outline-none text-emerald-200 placeholder:text-slate-500 font-medium resize-none text-xs sm:text-sm leading-relaxed"
                     />
                     {candidateSpeechText.trim() ? (
@@ -1428,24 +1428,24 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
       </div>
 
       {/* Authentic Zoom Control Bottom Footer Bar */}
-      <div className="px-3 sm:px-5 py-2 rounded-2xl bg-[#090d16] border border-slate-800 flex items-center justify-between shadow-2xl">
+      <div className="px-3 sm:px-4 py-1.5 rounded-2xl bg-[#090d16] border border-slate-800 flex items-center justify-between shadow-2xl shrink-0">
         {/* Left Zoom Controls: Audio / Video / Security / Members */}
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center gap-1 sm:gap-1.5">
           {/* Mute Button with Caret */}
           <div className="relative flex items-center">
             <button
               onClick={handleToggleMute}
-              className={`flex flex-col items-center justify-center w-14 sm:w-16 h-12 rounded-xl text-xs font-semibold transition-all relative ${
+              className={`flex flex-col items-center justify-center w-14 sm:w-16 h-10 rounded-xl text-xs font-semibold transition-all relative ${
                 isMuted
                   ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
                   : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 shadow-sm shadow-emerald-500/20'
               }`}
               title={isMuted ? 'Nyalakan Mikrofon (Unmute)' : 'Mute Mikrofon'}
             >
-              {isMuted ? <MicOff className="w-4 h-4 mb-0.5 text-rose-400" /> : <Mic className="w-4 h-4 mb-0.5 text-emerald-400" />}
+              {isMuted ? <MicOff className="w-3.5 h-3.5 mb-0.5 text-rose-400" /> : <Mic className="w-3.5 h-3.5 mb-0.5 text-emerald-400" />}
               <span className="text-[9px] uppercase font-mono font-bold">{isMuted ? 'UNMUTE' : 'MUTE'}</span>
               {!isMuted && (
-                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               )}
             </button>
           </div>
@@ -1453,62 +1453,61 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
           {/* Video Toggle Button with Caret */}
           <button
             onClick={handleToggleVideo}
-            className={`flex flex-col items-center justify-center w-14 sm:w-16 h-12 rounded-xl text-xs font-semibold transition-all ${
+            className={`relative flex flex-col items-center justify-center w-14 sm:w-16 h-10 rounded-xl text-xs font-semibold transition-all ${
               isVideoStopped
                 ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
                 : 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/40'
             }`}
             title={isVideoStopped ? 'Nyalakan Kamera Video' : 'Kamera Aktif (Klik untuk Stop Video)'}
           >
-            {isVideoStopped ? <VideoOff className="w-4 h-4 mb-0.5 text-rose-400" /> : <Video className="w-4 h-4 mb-0.5 text-emerald-400" />}
+            {isVideoStopped ? <VideoOff className="w-3.5 h-3.5 mb-0.5 text-rose-400" /> : <Video className="w-3.5 h-3.5 mb-0.5 text-emerald-400" />}
             <span className="text-[9px] uppercase font-mono font-bold">{isVideoStopped ? 'START' : 'STOP VIDEO'}</span>
             {!isVideoStopped && (
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             )}
           </button>
 
           {/* Security Shield */}
           <button
             onClick={() => onOpenDemoOverlay('micAlert')}
-            className="hidden md:flex flex-col items-center justify-center w-14 h-12 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-semibold transition-colors"
+            className="hidden md:flex flex-col items-center justify-center w-14 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-semibold transition-colors"
             title="Pengaturan Keamanan Audio & Enkripsi"
           >
-            <Shield className="w-4 h-4 mb-0.5 text-emerald-400" />
+            <Shield className="w-3.5 h-3.5 mb-0.5 text-emerald-400" />
             <span className="text-[9px] uppercase font-mono">SECURITY</span>
           </button>
 
           {/* Participants */}
           <button
             onClick={() => setViewMode(viewMode === 'speaker' ? 'gallery' : 'speaker')}
-            className="hidden md:flex flex-col items-center justify-center w-16 h-12 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-semibold transition-colors relative"
+            className="hidden md:flex flex-col items-center justify-center w-16 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-semibold transition-colors relative"
             title="Daftar Peserta Rapat (2 Orang)"
           >
-            <Users className="w-4 h-4 mb-0.5 text-cyan-400" />
+            <Users className="w-3.5 h-3.5 mb-0.5 text-cyan-400" />
             <span className="text-[9px] uppercase font-mono">MEMBERS</span>
-            <span className="absolute top-1.5 right-2 text-[9px] font-bold text-white bg-blue-600 rounded-full px-1">2</span>
+            <span className="absolute top-1 right-1.5 text-[9px] font-bold text-white bg-blue-600 rounded-full px-1">2</span>
           </button>
 
           {/* Chat Toggle */}
           <button
             onClick={() => setIsChatOpen(!isChatOpen)}
-            className={`hidden sm:flex flex-col items-center justify-center w-14 h-12 rounded-xl border text-xs font-semibold transition-colors ${
+            className={`hidden sm:flex flex-col items-center justify-center w-14 h-10 rounded-xl border text-xs font-semibold transition-colors ${
               isChatOpen
                 ? 'bg-blue-600/20 border-blue-500/40 text-blue-300'
                 : 'bg-slate-900 hover:bg-slate-800 border-slate-800 text-slate-300'
             }`}
             title="Buka/Tutup Panel Transkrip & Chat"
           >
-            <MessageSquare className="w-4 h-4 mb-0.5 text-blue-400" />
+            <MessageSquare className="w-3.5 h-3.5 mb-0.5 text-blue-400" />
             <span className="text-[9px] uppercase font-mono">CHAT</span>
           </button>
         </div>
 
-        {/* Center Primary Action: Selesai Menjawab Saja (Tanpa tombol Dengarkan Jessica) */}
         {/* Center Primary Action: Selesai Menjawab / Lanjut & Langsung Diagnostik */}
         <div className="flex items-center gap-2">
           <button
             onClick={handleNextQuestionOrFinish}
-            className="flex items-center gap-2 px-5 sm:px-7 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs sm:text-sm shadow-xl shadow-blue-600/30 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            className="flex items-center gap-2 px-5 sm:px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs sm:text-sm shadow-xl shadow-blue-600/30 transition-all hover:scale-105 active:scale-95 cursor-pointer"
           >
             <CheckCircle2 className="w-4 h-4" />
             <span>
@@ -1531,7 +1530,7 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
               }
               onFinishSimulation(updatedAnswers);
             }}
-            className="flex items-center gap-1.5 px-3.5 sm:px-4 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-cyan-500/30 hover:border-cyan-500/60 text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-cyan-500/30 hover:border-cyan-500/60 text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer"
             title="Selesaikan wawancara sekarang dan langsung hitung persentase diagnostik nyata"
           >
             <Sparkles className="w-4 h-4 text-cyan-400" />
@@ -1545,16 +1544,16 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
           <div className="relative">
             <button
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="flex flex-col items-center justify-center w-12 sm:w-14 h-12 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 text-xs font-semibold transition-colors"
+              className="flex flex-col items-center justify-center w-12 sm:w-14 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 text-xs font-semibold transition-colors"
               title="Kirim Reaksi Emosi Zoom"
             >
-              <Smile className="w-4 h-4 mb-0.5 text-amber-400" />
+              <Smile className="w-3.5 h-3.5 mb-0.5 text-amber-400" />
               <span className="text-[9px] uppercase font-mono">REACTION</span>
             </button>
 
             {/* Reaction popup (Zoom authentic icons) */}
             {showEmojiPicker && (
-              <div className="absolute bottom-14 right-0 p-2 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl flex items-center gap-2 z-50 animate-fadeIn">
+              <div className="absolute bottom-12 right-0 p-2 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl flex items-center gap-2 z-50 animate-fadeIn">
                 {[
                   { emoji: '👏', label: 'Tepuk Tangan' },
                   { emoji: '👍', label: 'Jempol' },
@@ -1578,7 +1577,7 @@ export const S03Simulation: React.FC<S03SimulationProps> = ({
 
           <button
             onClick={() => onOpenDemoOverlay('exit')}
-            className="flex items-center justify-center gap-1.5 px-3 sm:px-4 h-12 rounded-xl bg-rose-600/90 hover:bg-rose-600 text-white font-extrabold text-xs transition-colors shadow-lg shadow-rose-600/25"
+            className="flex items-center justify-center gap-1.5 px-3 sm:px-4 h-10 rounded-xl bg-rose-600/90 hover:bg-rose-600 text-white font-extrabold text-xs transition-colors shadow-lg shadow-rose-600/25"
             title="Keluar / Akhiri Rapat Zoom"
           >
             <PhoneOff className="w-4 h-4" />
