@@ -175,9 +175,24 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     return clean;
   };
 
-  // Helper link promosi Cobain Simulasi Gratis
+  // Helper link dinamis dengan skor terbaru agar preview Scorecard di WhatsApp & Instagram selalu menampilkan skor terbaru
   const getPromoLink = () => {
-    return 'https://interview-ai-wheat-one.vercel.app';
+    const params = new URLSearchParams({
+      n: (activeScorecardData.candidateName || 'Johan').slice(0, 32),
+      f: (activeScorecardData.jobTrack || 'Logistik & Gudang').slice(0, 40),
+      sc: String(activeScorecardData.score),
+      s: String(activeScorecardData.situation),
+      t: String(activeScorecardData.task),
+      a: String(activeScorecardData.action),
+      r: String(activeScorecardData.result),
+      v: activeScorecardData.vibeTemplate || 'neon',
+    });
+    const cleanSticker = (activeScorecardData.sticker || '').replace(/[^\x20-\x7E]/g, '').trim();
+    if (cleanSticker) {
+      params.set('st', cleanSticker);
+    }
+    const qs = params.toString().replace(/\(/g, '%28').replace(/\)/g, '%29');
+    return `https://interview-ai-wheat-one.vercel.app/s?${qs}`;
   };
 
   // Pesan WhatsApp & Instagram dengan format lengkap SCORECARD EVALUASI INTERVIEW STAR + link aktif

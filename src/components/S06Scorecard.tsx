@@ -237,7 +237,19 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
   }, [autoSticker]);
 
   const fieldObj = JOB_FIELDS.find((f) => f.id === selectedField) || JOB_FIELDS[1];
-  const promoUrl = 'https://interview-ai-wheat-one.vercel.app';
+  const dynamicPromoParams = new URLSearchParams({
+    n: (candidateName || 'Johan').slice(0, 32),
+    f: (fieldObj.title || 'Logistik & Gudang').slice(0, 40),
+    sc: String(evalResult.overallScore),
+    s: String(evalResult.situationScore),
+    t: String(evalResult.taskScore),
+    a: String(evalResult.actionScore),
+    r: String(evalResult.resultScore),
+    v: vibeTemplate || 'neon',
+  });
+  const cleanAutoSticker = (activeSticker || '').replace(/[^\x20-\x7E]/g, '').trim();
+  if (cleanAutoSticker) dynamicPromoParams.set('st', cleanAutoSticker);
+  const promoUrl = `https://interview-ai-wheat-one.vercel.app/s?${dynamicPromoParams.toString().replace(/\(/g, '%28').replace(/\)/g, '%29')}`;
   
   // Format pesan teks Scorecard Evaluasi Interview STAR lengkap untuk WhatsApp & Instagram
   const captionText =
@@ -1106,12 +1118,12 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
                   </button>
                 </div>
 
-                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 leading-relaxed font-sans whitespace-pre-line">
-                  {captionText.split(/(https:\/\/interview-ai-wheat-one\.vercel\.app)/g).map((part, idx) =>
-                    part === 'https://interview-ai-wheat-one.vercel.app' ? (
+                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 leading-relaxed font-sans whitespace-pre-line break-all">
+                  {captionText.split(/(https:\/\/interview-ai-wheat-one\.vercel\.app[^\s]*)/g).map((part, idx) =>
+                    part.startsWith('https://interview-ai-wheat-one.vercel.app') ? (
                       <a
                         key={idx}
-                        href="https://interview-ai-wheat-one.vercel.app"
+                        href={part}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-cyan-400 hover:text-cyan-300 font-mono font-bold underline"

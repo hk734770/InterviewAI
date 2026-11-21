@@ -1,0 +1,517 @@
+import { ImageResponse } from '@vercel/og';
+
+export const config = {
+  runtime: 'edge',
+};
+
+function getPersonaForScore(score) {
+  if (score >= 95) {
+    return {
+      title: 'Aura Calon Direktur, Nada Bicara Siap RUPS',
+      quote: 'Semua jawaban diselipin terminologi berbobot standar Fortune 500. Interviewer berasa lagi presentasi ke calon komisaris!',
+      tier: 'TIER S+ (TOP 1% KANDIDAT)',
+      verdict: 'Sangat Layak Direkrut',
+      sticker: 'LOLOS TAHAP 1 AMIN',
+    };
+  }
+  if (score >= 90) {
+    return {
+      title: 'Ninja STAR: Sat-Set Gaspol No Basa-Basi',
+      quote: 'Situasi jelas, aksi nyata, hasil konkret. Langsung to the point bikin HRD manggut-manggut.',
+      tier: 'TIER S+ (GOKIL PARAH)',
+      verdict: 'Sangat Layak Direkrut',
+      sticker: 'AUTO OFFERING LETTER',
+    };
+  }
+  if (score >= 85) {
+    return {
+      title: 'Pede Tingkat Dewa, Jawaban Mengalir',
+      quote: 'HRD belum selesai nanya, jawaban udah 3 paragraf. Kharisma 99%, siap gaspol!',
+      tier: 'TIER S (KOMPETEN & SOLID)',
+      verdict: 'Siap Kerja & Kompeten',
+      sticker: 'EMANG BOLEH SE-STAR INI?',
+    };
+  }
+  if (score >= 80) {
+    return {
+      title: 'Si Master Ngeles Berkelas Tapi Lolos',
+      quote: 'Interview kayak nongkrong santai di Senopati, luwes banget! Ditanya apapun ngalir lancar.',
+      tier: 'TIER S (PEDE GASPOL)',
+      verdict: 'Siap Kerja & Kompeten',
+      sticker: 'MENYALA ABANGKUH',
+    };
+  }
+  if (score >= 75) {
+    return {
+      title: 'Kucing Oren Vibes: Modal Senyum, Lolos Top 20%',
+      quote: 'Muka tenang, dada dug-dug ser-seran. Untung AI Jessica gak liat tangan gemeteran di bawah meja.',
+      tier: 'TIER A (HOKI TINGKAT TINGGI)',
+      verdict: 'Cukup Siap Kerja',
+      sticker: 'MEOW APPROVED 100%',
+    };
+  }
+  if (score >= 70) {
+    return {
+      title: 'Si Penutur Santai Tapi Kurang STAR',
+      quote: 'Gaya bicaramu super tenang dan meyakinkan, tinggal poles angka terukur di bagian Result!',
+      tier: 'TIER A (CUKUP SIAP KERJA)',
+      verdict: 'Cukup Siap Kerja',
+      sticker: 'VIBES SENOPATI 100%',
+    };
+  }
+  if (score >= 60) {
+    return {
+      title: 'Ninja Terselubung: Hemat Kata Tapi Ngena',
+      quote: 'Jawaban to the point banget sampai interviewer nungguin kelanjutannya. Tambahin detail STAR biar makin nendang!',
+      tier: 'TIER B (POTENSI TERSEMBUNYI)',
+      verdict: 'Perlu Pendalaman STAR',
+      sticker: 'SAT-SET NO DRAMA',
+    };
+  }
+  return {
+    title: 'Pejuang STAR: Masih Pemanasan Tapi Mental Baja',
+    quote: 'Masih rada grogi dan jawab singkat-singkat, tapi mental berani uji coba simulasi udah dapet nilai 100!',
+    tier: 'TIER B (PERLU LATIHAN)',
+    verdict: 'Perlu Pendalaman STAR',
+    sticker: 'NGOPI DULU GAIS',
+  };
+}
+
+function clampScore(val, fallback) {
+  const num = Number.parseInt(val || '', 10);
+  if (Number.isNaN(num)) return fallback;
+  return Math.max(0, Math.min(100, num));
+}
+
+function el(type, props, ...children) {
+  const flat = children.flat().filter((c) => c !== null && c !== undefined && c !== false);
+  return {
+    type,
+    props: {
+      ...(props || {}),
+      children: flat.length === 1 ? flat[0] : flat.length > 1 ? flat : undefined,
+    },
+  };
+}
+
+export default async function handler(request) {
+  const { searchParams } = new URL(request.url);
+  const candidateName = (searchParams.get('n') || 'Johan').slice(0, 32);
+  const jobTrack = (searchParams.get('f') || 'Logistik & Gudang').slice(0, 40);
+  const score = clampScore(searchParams.get('sc'), 78);
+  const situation = clampScore(searchParams.get('s'), score);
+  const task = clampScore(searchParams.get('t'), score);
+  const action = clampScore(searchParams.get('a'), score);
+  const result = clampScore(searchParams.get('r'), score);
+  const vibe = searchParams.get('v') || 'neon';
+
+  const persona = getPersonaForScore(score);
+  const rawSticker = searchParams.get('st') || persona.sticker;
+  const cleanSticker = rawSticker.replace(/[^\x20-\x7E]/g, '').trim() || persona.sticker;
+  const initial = (candidateName.trim().charAt(0) || 'J').toUpperCase();
+
+  const themes = {
+    neon: {
+      bg: 'linear-gradient(180deg, #07111e 0%, #0d1e33 50%, #090d16 100%)',
+      border: '#22d3ee',
+      accent: '#22d3ee',
+    },
+    midnight: {
+      bg: 'linear-gradient(180deg, #100a1c 0%, #1a0f30 50%, #0a0614 100%)',
+      border: '#a855f7',
+      accent: '#c084fc',
+    },
+    sunset: {
+      bg: 'linear-gradient(180deg, #18090a 0%, #2a1014 50%, #0d0507 100%)',
+      border: '#f59e0b',
+      accent: '#fbbf24',
+    },
+  };
+  const theme = themes[vibe] || themes.neon;
+
+  const pillarCard = (label, value, subtitle, valueColor) =>
+    el(
+      'div',
+      {
+        style: {
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          width: '48.8%',
+          backgroundColor: '#050a14',
+          border: '2px solid #1e293b',
+          borderRadius: '18px',
+          padding: '18px 22px',
+        },
+      },
+      el(
+        'div',
+        {
+          style: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+          },
+        },
+        el(
+          'span',
+          {
+            style: {
+              fontSize: '20px',
+              fontWeight: 700,
+              color: '#94a3b8',
+              letterSpacing: '0.06em',
+            },
+          },
+          label
+        ),
+        el(
+          'span',
+          {
+            style: {
+              fontSize: '30px',
+              fontWeight: 900,
+              color: valueColor,
+            },
+          },
+          `${value}%`
+        )
+      ),
+      el(
+        'span',
+        {
+          style: {
+            fontSize: '18px',
+            color: '#cbd5e1',
+            marginTop: '6px',
+            fontWeight: 600,
+          },
+        },
+        subtitle
+      )
+    );
+
+  const tree = el(
+    'div',
+    {
+      style: {
+        width: '1200px',
+        height: '860px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        background: theme.bg,
+        padding: '32px 40px',
+        color: '#ffffff',
+        fontFamily: 'sans-serif',
+        border: `6px solid ${theme.border}`,
+      },
+    },
+    // Top Brand Header
+    el(
+      'div',
+      {
+        style: {
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '100%',
+        },
+      },
+      el(
+        'div',
+        { style: { display: 'flex', alignItems: 'center', gap: '12px' } },
+        el(
+          'span',
+          { style: { fontSize: '24px', fontWeight: 900, color: theme.accent, letterSpacing: '0.08em' } },
+          'INTERVIEWAI'
+        ),
+        el(
+          'span',
+          { style: { fontSize: '20px', fontWeight: 700, color: '#94a3b8' } },
+          '• GEN-Z EDITION'
+        )
+      ),
+      el(
+        'div',
+        {
+          style: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            backgroundColor: 'rgba(16, 185, 129, 0.16)',
+            border: '2px solid rgba(52, 211, 153, 0.45)',
+            borderRadius: '999px',
+            padding: '8px 20px',
+            color: '#34d399',
+            fontSize: '18px',
+            fontWeight: 800,
+          },
+        },
+        '● LOLOS VERIFIKASI'
+      )
+    ),
+
+    // Candidate Identity + Tier Row
+    el(
+      'div',
+      {
+        style: {
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '100%',
+          marginTop: '14px',
+        },
+      },
+      el(
+        'div',
+        { style: { display: 'flex', alignItems: 'center', gap: '16px' } },
+        el(
+          'div',
+          {
+            style: {
+              width: '62px',
+              height: '62px',
+              borderRadius: '999px',
+              background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '30px',
+              fontWeight: 900,
+              color: '#ffffff',
+            },
+          },
+          initial
+        ),
+        el(
+          'div',
+          { style: { display: 'flex', flexDirection: 'column' } },
+          el(
+            'span',
+            { style: { fontSize: '32px', fontWeight: 900, color: '#ffffff', lineHeight: 1.1 } },
+            candidateName
+          ),
+          el(
+            'span',
+            { style: { fontSize: '18px', fontWeight: 700, color: '#67e8f9', marginTop: '4px' } },
+            `ROLE: ${jobTrack.toUpperCase()} • READY TO HIRE`
+          )
+        )
+      ),
+      el(
+        'div',
+        {
+          style: {
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: 'rgba(245, 158, 11, 0.18)',
+            border: '2px solid rgba(251, 191, 36, 0.5)',
+            borderRadius: '14px',
+            padding: '10px 20px',
+            color: '#fcd34d',
+            fontSize: '19px',
+            fontWeight: 900,
+          },
+        },
+        persona.tier
+      )
+    ),
+
+    // Main Scorecard Box
+    el(
+      'div',
+      {
+        style: {
+          display: 'flex',
+          flexDirection: 'column',
+          backgroundColor: 'rgba(15, 23, 42, 0.92)',
+          border: '2px solid #334155',
+          borderRadius: '28px',
+          padding: '26px 30px',
+          marginTop: '16px',
+          flex: 1,
+          justifyContent: 'space-between',
+        },
+      },
+      // Score + Sticker Row
+      el(
+        'div',
+        {
+          style: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+          },
+        },
+        el(
+          'div',
+          { style: { display: 'flex', flexDirection: 'column' } },
+          el(
+            'div',
+            { style: { display: 'flex', alignItems: 'baseline', gap: '10px' } },
+            el(
+              'span',
+              { style: { fontSize: '104px', fontWeight: 900, color: '#ffffff', lineHeight: 0.95 } },
+              String(score)
+            ),
+            el(
+              'span',
+              { style: { fontSize: '42px', fontWeight: 800, color: '#64748b' } },
+              '/ 100'
+            )
+          ),
+          el(
+            'span',
+            { style: { fontSize: '21px', fontWeight: 800, color: '#34d399', marginTop: '8px' } },
+            `• ${persona.verdict} • ${persona.tier} •`
+          )
+        ),
+        el(
+          'div',
+          {
+            style: {
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-end',
+              gap: '12px',
+            },
+          },
+          el(
+            'div',
+            {
+              style: {
+                display: 'flex',
+                background: 'linear-gradient(90deg, #f43f5e, #ec4899, #f59e0b)',
+                color: '#ffffff',
+                fontSize: '22px',
+                fontWeight: 900,
+                padding: '12px 26px',
+                borderRadius: '999px',
+                border: '2px solid rgba(255,255,255,0.6)',
+              },
+            },
+            cleanSticker
+          ),
+          el(
+            'div',
+            {
+              style: {
+                display: 'flex',
+                backgroundColor: 'rgba(6, 182, 212, 0.16)',
+                border: '2px solid rgba(34, 211, 238, 0.45)',
+                color: '#67e8f9',
+                fontSize: '18px',
+                fontWeight: 800,
+                padding: '8px 18px',
+                borderRadius: '12px',
+              },
+            },
+            `Skor STAR Aktual: ${score}%`
+          )
+        )
+      ),
+
+      // Persona Box
+      el(
+        'div',
+        {
+          style: {
+            display: 'flex',
+            flexDirection: 'column',
+            backgroundColor: '#050a14',
+            border: '2px solid rgba(245, 158, 11, 0.45)',
+            borderRadius: '18px',
+            padding: '16px 22px',
+            marginTop: '14px',
+          },
+        },
+        el(
+          'div',
+          { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+          el(
+            'span',
+            { style: { fontSize: '23px', fontWeight: 900, color: '#fcd34d' } },
+            persona.title
+          ),
+          el(
+            'span',
+            {
+              style: {
+                fontSize: '16px',
+                fontWeight: 800,
+                color: '#fde68a',
+                backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                padding: '4px 12px',
+                borderRadius: '8px',
+              },
+            },
+            `Otomatis ${score}%`
+          )
+        ),
+        el(
+          'span',
+          { style: { fontSize: '18px', color: '#cbd5e1', marginTop: '6px', lineHeight: 1.35 } },
+          `"${persona.quote}"`
+        )
+      ),
+
+      // 4 STAR Pillars (2x2)
+      el(
+        'div',
+        {
+          style: {
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between',
+            rowGap: '14px',
+            marginTop: '16px',
+            width: '100%',
+          },
+        },
+        pillarCard('SITUATION', situation, 'Gercep Parah', '#34d399'),
+        pillarCard('TASK', task, 'No Drama', '#60a5fa'),
+        pillarCard('ACTION', action, 'Sat-Set Gaspol', '#2dd4bf'),
+        pillarCard('RESULT', result, 'Penting Cuan', '#c084fc')
+      )
+    ),
+
+    // Footer Link Bar
+    el(
+      'div',
+      {
+        style: {
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginTop: '14px',
+          padding: '12px 22px',
+          borderRadius: '16px',
+          backgroundColor: 'rgba(6, 182, 212, 0.14)',
+          border: '2px solid rgba(34, 211, 238, 0.5)',
+        },
+      },
+      el(
+        'span',
+        { style: { fontSize: '19px', fontWeight: 900, color: '#6ee7b7' } },
+        'COBA SIMULASI INTERVIEW AI GRATIS'
+      ),
+      el(
+        'span',
+        { style: { fontSize: '20px', fontWeight: 900, color: '#67e8f9' } },
+        'https://interview-ai-wheat-one.vercel.app'
+      )
+    )
+  );
+
+  return new ImageResponse(tree, {
+    width: 1200,
+    height: 860,
+    headers: {
+      'Cache-Control': 'public, max-age=31536000, immutable',
+    },
+  });
+}
