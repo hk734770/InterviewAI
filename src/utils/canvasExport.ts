@@ -768,7 +768,7 @@ export function renderScorecardToCanvas(data: ScorecardData): HTMLCanvasElement 
 export function renderWhatsAppCompositeToCanvas(data: ScorecardData): HTMLCanvasElement {
   const scorecardCanvas = renderScorecardToCanvas(data);
   const width = 1080;
-  const headerHeight = 760;
+  const headerHeight = 840;
   const totalHeight = headerHeight + scorecardCanvas.height;
 
   const canvas = document.createElement('canvas');
@@ -787,9 +787,9 @@ export function renderWhatsAppCompositeToCanvas(data: ScorecardData): HTMLCanvas
 
   // Kotak Bubble Pesan Teks Evaluasi STAR bergaya WhatsApp Modern
   const boxX = 60;
-  const boxY = 35;
+  const boxY = 30;
   const boxW = width - 120;
-  const boxH = headerHeight - 65;
+  const boxH = headerHeight - 55;
 
   const cardGrad = ctx.createLinearGradient(boxX, boxY, boxX + boxW, boxY + boxH);
   cardGrad.addColorStop(0, 'rgba(7, 29, 36, 0.98)');
@@ -813,69 +813,77 @@ export function renderWhatsAppCompositeToCanvas(data: ScorecardData): HTMLCanvas
   const stickerText = data.sticker || '🔥 MENYALA ABANGKUH 🔥';
   const textX = boxX + 45;
 
+  // Link Utama di Baris Pertama
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = '800 23px "JetBrains Mono", monospace';
+  ctx.fillText('🌐 https://interview-ai-wheat-one.vercel.app', textX, boxY + 52);
+  ctx.fillStyle = '#f8fafc';
+  ctx.font = '800 21px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('👆 KLIK LINK DI ATAS UNTUK MEMBUKA APLIKASI INTERVIEW AI', textX, boxY + 86);
+
   // Judul Utama Teks Evaluasi
   ctx.fillStyle = '#34d399';
-  ctx.font = '900 31px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText(`🔥 SCORECARD EVALUASI INTERVIEW STAR (${candidate})`, textX, boxY + 65);
+  ctx.font = '900 30px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText(`🔥 SCORECARD EVALUASI INTERVIEW STAR (${candidate})`, textX, boxY + 140);
 
   // Ringkasan Skor, Judul & Stiker
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 26px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText(`⭐ Skor STAR: ${data.score}/100 (${tierText})`, textX, boxY + 122);
+  ctx.fillText(`⭐ Skor STAR: ${data.score}/100 (${tierText})`, textX, boxY + 194);
 
   ctx.fillStyle = '#fde047';
   ctx.font = 'bold 23px "Plus Jakarta Sans", sans-serif';
   const titleLine = `👑 Judul: ${data.personaTitle}`;
-  ctx.fillText(titleLine.length > 68 ? titleLine.slice(0, 66) + '...' : titleLine, textX, boxY + 166);
+  ctx.fillText(titleLine.length > 68 ? titleLine.slice(0, 66) + '...' : titleLine, textX, boxY + 236);
 
   ctx.fillStyle = '#fb7185';
   ctx.font = 'bold 25px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText(`🏷️ Stiker: ${stickerText}`, textX, boxY + 210);
+  ctx.fillText(`🏷️ Stiker: ${stickerText}`, textX, boxY + 278);
 
   // Garis pemisah tipis
   ctx.strokeStyle = 'rgba(148, 163, 184, 0.22)';
   ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.moveTo(textX, boxY + 235);
-  ctx.lineTo(boxX + boxW - 45, boxY + 235);
+  ctx.moveTo(textX, boxY + 304);
+  ctx.lineTo(boxX + boxW - 45, boxY + 304);
   ctx.stroke();
 
   // Rincian Nilai STAR
   ctx.fillStyle = '#38bdf8';
   ctx.font = '900 26px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('📊 Rincian Nilai STAR:', textX, boxY + 276);
+  ctx.fillText('📊 Rincian Nilai STAR:', textX, boxY + 344);
 
   ctx.fillStyle = '#e2e8f0';
   ctx.font = '700 24px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText(`• Situation: ${data.situation}% (Gercep Parah)`, textX + 10, boxY + 318);
-  ctx.fillText(`• Task: ${data.task}% (No Drama)`, textX + 10, boxY + 356);
-  ctx.fillText(`• Action: ${data.action}% (Sat-Set Gaspol)`, textX + 10, boxY + 394);
-  ctx.fillText(`• Result: ${data.result}% (Penting Cuan)`, textX + 10, boxY + 432);
+  ctx.fillText(`• Situation: ${data.situation}% (Gercep Parah)`, textX + 10, boxY + 386);
+  ctx.fillText(`• Task: ${data.task}% (No Drama)`, textX + 10, boxY + 424);
+  ctx.fillText(`• Action: ${data.action}% (Sat-Set Gaspol)`, textX + 10, boxY + 462);
+  ctx.fillText(`• Result: ${data.result}% (Penting Cuan)`, textX + 10, boxY + 500);
 
   // Garis pemisah kedua
   ctx.strokeStyle = 'rgba(148, 163, 184, 0.22)';
   ctx.beginPath();
-  ctx.moveTo(textX, boxY + 458);
-  ctx.lineTo(boxX + boxW - 45, boxY + 458);
+  ctx.moveTo(textX, boxY + 526);
+  ctx.lineTo(boxX + boxW - 45, boxY + 526);
   ctx.stroke();
 
   // Info Lampiran & Link Promo
   ctx.fillStyle = '#6ee7b7';
   ctx.font = '800 22px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('📸 [KARTU SCORECARD STAR (JPG HD) TERLAMPIR DI BAWAH]', textX, boxY + 498);
+  ctx.fillText('📸 [FILE GAMBAR SCORECARD STAR (JPG 1080x1920) DILAMPIRKAN]', textX, boxY + 566);
 
   ctx.fillStyle = '#f8fafc';
   ctx.font = 'bold 23px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('🎁 Mau coba uji mental interview lawan AI & dapet Scorecard kayak gini?', textX, boxY + 542);
+  ctx.fillText('🎁 Mau coba uji mental interview lawan AI & dapet Scorecard kayak gini?', textX, boxY + 610);
 
   ctx.fillStyle = '#bae6fd';
   ctx.font = 'bold 23px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('👉 Cobain Simulasi Gratis di sini (Klik Link Aktif di Caption):', textX, boxY + 580);
+  ctx.fillText('👉 Cobain Simulasi Gratis di sini (Klik Link):', textX, boxY + 648);
 
   // Pill Link URL
   ctx.fillStyle = 'rgba(6, 182, 212, 0.22)';
   ctx.beginPath();
-  ctx.roundRect(textX, boxY + 598, 690, 56, 16);
+  ctx.roundRect(textX, boxY + 668, 690, 56, 16);
   ctx.fill();
   ctx.strokeStyle = '#22d3ee';
   ctx.lineWidth = 2;
@@ -883,12 +891,12 @@ export function renderWhatsAppCompositeToCanvas(data: ScorecardData): HTMLCanvas
 
   ctx.fillStyle = '#38bdf8';
   ctx.font = '900 24px "JetBrains Mono", monospace';
-  ctx.fillText('🌐 https://interview-ai-wheat-one.vercel.app', textX + 20, boxY + 634);
+  ctx.fillText('🌐 https://interview-ai-wheat-one.vercel.app', textX + 20, boxY + 704);
   ctx.strokeStyle = '#38bdf8';
   ctx.lineWidth = 2.5;
   ctx.beginPath();
-  ctx.moveTo(textX + 62, boxY + 641);
-  ctx.lineTo(textX + 660, boxY + 641);
+  ctx.moveTo(textX + 62, boxY + 711);
+  ctx.lineTo(textX + 660, boxY + 711);
   ctx.stroke();
 
   // Tempelkan Kartu Visual Scorecard 1080x1920 tepat di bawah Teks Evaluasi STAR
