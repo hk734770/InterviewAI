@@ -239,8 +239,24 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
   const fieldObj = JOB_FIELDS.find((f) => f.id === selectedField) || JOB_FIELDS[1];
   const promoUrl = 'https://interview-ai-wheat-one.vercel.app';
   
-  // Caption bergaya gaul anak muda dengan link aktif https://interview-ai-wheat-one.vercel.app di baris pertama & bawah agar langsung bisa diklik di WhatsApp & Instagram
-  const captionText = `🌐 ${promoUrl}\n👆 KLIK LINK DI ATAS UNTUK MEMBUKA APLIKASI INTERVIEW AI 🔥\n\nGila bener skor interview AI gue tembus ${evalResult.overallScore}/100 nih 🔥! Judulnya otomatis dapet "${selectedPersona.title}" 😭😂.\n\nSticker: ${activeSticker}\n\n📸 *[FILE GAMBAR SCORECARD STAR (JPG 1080x1920) DILAMPIRKAN]*\nFile kartu Scorecard STAR format JPG resolusi tinggi (1080x1920) dilampirkan langsung di pesan ini.\n\n🎁 Mau coba uji mental interview lawan AI & dapet Scorecard kayak gini?\n👉 Cobain Simulasi Gratis di sini (Klik Link):\n${promoUrl}\n\n#MenyalaAbangku #InterviewAI #STARMethod #GenZCareer`;
+  // Format pesan teks Scorecard Evaluasi Interview STAR lengkap untuk WhatsApp & Instagram
+  const captionText =
+    `🌐 ${promoUrl}\n` +
+    `👆 *KLIK LINK DI ATAS UNTUK MEMBUKA APLIKASI INTERVIEW AI*\n\n` +
+    `*🔥 SCORECARD EVALUASI INTERVIEW STAR (${candidateName || 'Johan'})*\n\n` +
+    `⭐ Skor STAR: *${evalResult.overallScore}/100* (${selectedPersona.tier})\n` +
+    `👑 Judul: *${selectedPersona.title}*\n` +
+    `🏷️ Stiker: *${activeSticker}*\n\n` +
+    `📊 *Rincian Nilai STAR:*\n` +
+    `• Situation: ${evalResult.situationScore}% (Gercep Parah)\n` +
+    `• Task: ${evalResult.taskScore}% (No Drama)\n` +
+    `• Action: ${evalResult.actionScore}% (Sat-Set Gaspol)\n` +
+    `• Result: ${evalResult.resultScore}% (Penting Cuan)\n\n` +
+    `📸 *[FILE GAMBAR SCORECARD STAR (JPG 1080x1920) DILAMPIRKAN]*\n` +
+    `File kartu Scorecard STAR format JPG resolusi tinggi (1080x1920) dilampirkan langsung di pesan ini.\n\n` +
+    `🎁 *Mau coba uji mental interview lawan AI & dapet Scorecard kayak gini?*\n` +
+    `👉 *Cobain Simulasi Gratis di sini (Klik Link):*\n` +
+    `${promoUrl}`;
 
   const handleCopyCaption = () => {
     navigator.clipboard?.writeText(captionText);

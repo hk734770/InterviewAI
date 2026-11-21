@@ -171,7 +171,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     return 'https://interview-ai-wheat-one.vercel.app';
   };
 
-  // Pesan WhatsApp dengan link https://interview-ai-wheat-one.vercel.app aktif (bisa diklik) tepat di baris pertama (di bawah kartu Scorecard) & di bagian akhir
+  // Pesan WhatsApp & Instagram dengan format lengkap SCORECARD EVALUASI INTERVIEW STAR + link aktif
   const getFormattedWhatsAppMessage = () => {
     const promoLink = getPromoLink();
     const candidate = activeScorecardData.candidateName || 'Johan';
@@ -194,15 +194,79 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       `${promoLink}`;
   };
 
-  // Pesan Instagram dengan link https://interview-ai-wheat-one.vercel.app aktif di baris pertama & bawah
+  // Pesan Instagram menggunakan format lengkap SCORECARD EVALUASI INTERVIEW STAR yang sama persis
   const getFormattedInstagramMessage = () => {
-    const promoLink = getPromoLink();
-    if (captionText && captionText.includes(promoLink)) {
-      return captionText.startsWith('🌐')
-        ? captionText
-        : `🌐 ${promoLink}\n👆 KLIK LINK DI ATAS UNTUK BUKA APLIKASI INTERVIEW AI 🔥\n\n${captionText}`;
+    return getFormattedWhatsAppMessage();
+  };
+
+  // Helper non-blocking untuk menyalin teks pesan ke clipboard tanpa memutus user gesture navigator.share
+  const copyShareTextInBackground = (textToCopy: string) => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textToCopy).catch(() => {});
+      }
+    } catch (_) {}
+  };
+
+  // Helper Web Share API khusus Handphone yang memprioritaskan pengiriman FILE + TEKS BERSAMAAN
+  // (tanpa field `title` yang sering membuat browser HP/Mi Browser/Safari menolak gabungan files + text)
+  const shareFileAndTextOnMobile = async (
+    fileToShare: File,
+    messageText: string
+  ): Promise<'shared_with_text' | 'shared_file_only' | 'aborted' | 'unsupported'> => {
+    if (typeof navigator === 'undefined' || typeof navigator.share !== 'function') {
+      return 'unsupported';
     }
-    return `🌐 ${promoLink}\n👆 KLIK LINK DI ATAS UNTUK BUKA APLIKASI INTERVIEW AI 🔥\n\n${captionText || getFormattedWhatsAppMessage()}\n\n${promoLink}`;
+
+    // Salin teks di latar belakang (tanpa await) sebagai cadangan untuk aplikasi yang tidak menerima EXTRA_TEXT bersama foto (mis. IG Story)
+    copyShareTextInBackground(messageText);
+
+    const payloadWithText: ShareData = {
+      files: [fileToShare],
+      text: messageText,
+    };
+
+    // 1. Selalu coba kirim FILE + TEKS bersamaan terlebih dahulu
+    let canTryWithText = true;
+    if (typeof navigator.canShare === 'function') {
+      try {
+        canTryWithText = navigator.canShare(payloadWithText) || navigator.canShare({ files: [fileToShare] });
+      } catch {
+        canTryWithText = true;
+      }
+    }
+
+    if (canTryWithText) {
+      try {
+        await navigator.share(payloadWithText);
+        copyShareTextInBackground(messageText);
+        return 'shared_with_text';
+      } catch (err: any) {
+        if (err?.name === 'AbortError') {
+          return 'aborted';
+        }
+        console.warn('Web Share files+text fallback to files-only:', err);
+      }
+    }
+
+    // 2. Jika browser HP secara ketat menolak files+text bersama-sama, coba share file saja (teks sudah disalin ke clipboard)
+    const canShareFileOnly =
+      typeof navigator.canShare === 'function' ? navigator.canShare({ files: [fileToShare] }) : false;
+
+    if (canShareFileOnly) {
+      try {
+        await navigator.share({ files: [fileToShare] });
+        copyShareTextInBackground(messageText);
+        return 'shared_file_only';
+      } catch (err: any) {
+        if (err?.name === 'AbortError') {
+          return 'aborted';
+        }
+        console.warn('Web Share files-only error:', err);
+      }
+    }
+
+    return 'unsupported';
   };
 
   // Manual download JPG 1080x1920 (Gabungan Teks Evaluasi STAR + Scorecard)
@@ -255,35 +319,26 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       }
     }
 
-    // 2. Panggil Web Share API SEBAGAI OPERASI PERTAMA (tanpa memanggil clipboard.writeText / setTarget sebelumnya
-    // agar user gesture activation 100% terjaga dan file gambar Scorecard langsung terkirim ke Instagram!)
-    if (!cleanIg && fileToShare && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-      try {
-        const sharePayloadWithText = {
-          files: [fileToShare],
-          title: `Scorecard Evaluasi Interview STAR (${activeScorecardData.candidateName || 'Johan'})`,
-          text: igMessage,
-        };
-        const canShareWithText =
-          typeof navigator.canShare === 'function' ? navigator.canShare(sharePayloadWithText) : true;
-        const canShareFilesOnly =
-          typeof navigator.canShare === 'function' ? navigator.canShare({ files: [fileToShare] }) : true;
-
-        if (canShareWithText || canShareFilesOnly) {
-          await navigator.share(canShareWithText ? sharePayloadWithText : { files: [fileToShare] });
-          setTarget('instagram');
-          setFeedbackMsg('✅ Berhasil! Kartu Scorecard & tautan aktif https://interview-ai-wheat-one.vercel.app berhasil dikirimkan ke Instagram.');
-          try {
-            confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
-          } catch {}
-          return;
-        }
-      } catch (err: any) {
-        if (err?.name === 'AbortError') {
-          setTarget('instagram');
-          return;
-        }
-        console.warn('Instagram share fallback:', err);
+    // 2. Panggil Web Share API SEBAGAI OPERASI PERTAMA untuk mengirim FILE SCORECARD + TEKS LENGKAP BERSAMAAN ke Instagram
+    if (!cleanIg && fileToShare) {
+      const shareResult = await shareFileAndTextOnMobile(fileToShare, igMessage);
+      if (shareResult === 'aborted') {
+        setTarget('instagram');
+        return;
+      }
+      if (shareResult === 'shared_with_text' || shareResult === 'shared_file_only') {
+        setTarget('instagram');
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 4000);
+        setFeedbackMsg(
+          shareResult === 'shared_with_text'
+            ? '✅ Berhasil! Kartu Scorecard beserta teks evaluasi STAR & link aktif telah dikirimkan bersamaan ke Instagram (teks juga otomatis disalin ke clipboard jika ingin ditempel di Story/DM).'
+            : '✅ Kartu Scorecard terkirim! Teks evaluasi STAR & link aktif sudah otomatis disalin ke clipboard — tinggal Tempel (Paste) di Instagram DM/Story.'
+        );
+        try {
+          confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+        } catch {}
+        return;
       }
     }
 
@@ -353,35 +408,26 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       }
     }
 
-    // 2. Panggil Web Share API SEBAGAI OPERASI PERTAMA (tanpa memanggil clipboard.writeText / setTarget sebelumnya
-    // agar user gesture activation tidak hilang dan Kartu Scorecard + Teks Evaluasi STAR langsung terkirim ke WhatsApp!)
-    if (!cleanPhone && fileToShare && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-      try {
-        const sharePayloadWithText = {
-          files: [fileToShare],
-          title: `Scorecard Evaluasi Interview STAR (${activeScorecardData.candidateName || 'Johan'})`,
-          text: waMessage,
-        };
-        const canShareWithText =
-          typeof navigator.canShare === 'function' ? navigator.canShare(sharePayloadWithText) : true;
-        const canShareFilesOnly =
-          typeof navigator.canShare === 'function' ? navigator.canShare({ files: [fileToShare] }) : true;
-
-        if (canShareWithText || canShareFilesOnly) {
-          await navigator.share(canShareWithText ? sharePayloadWithText : { files: [fileToShare] });
-          setTarget('whatsapp');
-          setFeedbackMsg('✅ Berhasil! Teks Scorecard Evaluasi Interview STAR, Kartu Scorecard, dan link aktif https://interview-ai-wheat-one.vercel.app berhasil dikirim ke WhatsApp.');
-          try {
-            confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
-          } catch {}
-          return;
-        }
-      } catch (err: any) {
-        if (err?.name === 'AbortError') {
-          setTarget('whatsapp');
-          return;
-        }
-        console.warn('Navigator share error, continuing with direct WhatsApp URL:', err);
+    // 2. Panggil Web Share API SEBAGAI OPERASI PERTAMA untuk mengirim FILE SCORECARD + TEKS LENGKAP BERSAMAAN ke WhatsApp
+    if (!cleanPhone && fileToShare) {
+      const shareResult = await shareFileAndTextOnMobile(fileToShare, waMessage);
+      if (shareResult === 'aborted') {
+        setTarget('whatsapp');
+        return;
+      }
+      if (shareResult === 'shared_with_text' || shareResult === 'shared_file_only') {
+        setTarget('whatsapp');
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 4000);
+        setFeedbackMsg(
+          shareResult === 'shared_with_text'
+            ? '✅ Berhasil! Teks Scorecard Evaluasi Interview STAR beserta gambar Scorecard & link aktif telah dikirimkan bersamaan ke WhatsApp (teks juga otomatis tersalin di clipboard).'
+            : '✅ Kartu Scorecard terkirim! Teks Scorecard Evaluasi Interview STAR sudah otomatis disalin ke clipboard — Anda juga dapat langsung menekan tombol Kirim Teks ke WhatsApp di bawah.'
+        );
+        try {
+          confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+        } catch {}
+        return;
       }
     }
 
@@ -419,16 +465,26 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   };
 
   const handleCopyTextOnly = () => {
+    const msg = getFormattedWhatsAppMessage();
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(captionText);
+      navigator.clipboard.writeText(msg);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2500);
     }
   };
 
+  // Kirim teks langsung ke WhatsApp (cadangan 1-klik jika browser HP tertentu hanya melampirkan foto tanpa caption)
+  const handleOpenWhatsAppTextDirect = () => {
+    const cleanPhone = getCleanWaPhone();
+    const waMessage = getFormattedWhatsAppMessage();
+    copyShareTextInBackground(waMessage);
+    const waUrl = getWhatsAppTargetUrl(cleanPhone, waMessage);
+    window.open(waUrl, '_blank');
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-xl bg-slate-900 border-2 border-slate-700/80 rounded-3xl p-5 sm:p-6 shadow-2xl text-slate-100 overflow-hidden max-h-[92vh] overflow-y-auto">
+      <div className="relative w-full max-w-xl bg-slate-900 border-2 border-slate-700/80 rounded-3xl p-5 sm:p-6 shadow-2xl text-slate-100 max-h-[92dvh] overflow-y-auto">
         {/* Glow Effects */}
         <div className="absolute -top-24 -right-24 w-52 h-52 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 w-52 h-52 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none" />
@@ -669,20 +725,30 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               </div>
             )}
 
-            <div className="pt-1 flex flex-col sm:flex-row gap-2">
-              <button
-                type="submit"
-                className="w-full flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-pink-600 via-rose-600 to-purple-600 hover:opacity-95 text-white font-black text-sm shadow-lg shadow-pink-600/25 transition-all cursor-pointer"
-              >
-                <Send className="w-4 h-4" />
-                <span>Kirim Scorecard ke Instagram {getCleanIgUsername() ? `@${getCleanIgUsername()}` : '(Foto + Link Aktif)'}</span>
-              </button>
+            <div className="pt-1 space-y-2">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button
+                  type="submit"
+                  className="w-full flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-pink-600 via-rose-600 to-purple-600 hover:opacity-95 text-white font-black text-sm shadow-lg shadow-pink-600/25 transition-all cursor-pointer"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Kirim Scorecard + Teks ke Instagram {getCleanIgUsername() ? `@${getCleanIgUsername()}` : '(Foto + Teks)'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBackToSelect}
+                  className="px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors cursor-pointer"
+                >
+                  Ganti Pilihan
+                </button>
+              </div>
               <button
                 type="button"
-                onClick={handleBackToSelect}
-                className="px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors cursor-pointer"
+                onClick={handleCopyTextOnly}
+                className="w-full flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-pink-500/30 text-pink-200 text-xs font-bold transition-colors cursor-pointer"
               >
-                Ganti Pilihan
+                {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-pink-400" />}
+                <span>{isCopied ? 'Teks Evaluasi STAR Tersalin! Tinggal Tempel (Paste) di IG' : 'Salin Teks Evaluasi STAR untuk IG Story / DM'}</span>
               </button>
             </div>
           </form>
@@ -884,15 +950,34 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                   <div className="text-left leading-tight">
                     <div className="flex items-center gap-2">
                       <span className="text-sm sm:text-base font-black uppercase tracking-tight text-slate-950">
-                        Kirim ke WhatsApp (Foto Otomatis Tertempel)
+                        Kirim ke WhatsApp (Scorecard + Teks)
                       </span>
                       <span className="text-xs">🚀</span>
                     </div>
                     <span className="text-[11px] text-slate-900 font-bold block mt-0.5">
-                      Foto format JPG HD (1080x1920) otomatis tertempel di bawah teks pesan (Tanpa menekan Ctrl+V)
+                      Kartu Scorecard JPG HD &amp; teks evaluasi STAR lengkap dikirim bersamaan ke WhatsApp
                     </span>
                   </div>
                 </button>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={handleOpenWhatsAppTextDirect}
+                    className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-emerald-950/70 hover:bg-emerald-900/70 border border-emerald-500/40 text-emerald-300 text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Kirim Teks Evaluasi ke WA</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCopyTextOnly}
+                    className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-cyan-400" />}
+                    <span>{isCopied ? 'Teks Tersalin!' : 'Salin Teks Evaluasi STAR'}</span>
+                  </button>
+                </div>
 
                 {isDesktop && (
                   <div className="flex items-center justify-center gap-2 pt-1 text-[11px] text-slate-400">
