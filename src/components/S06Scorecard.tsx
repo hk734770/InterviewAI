@@ -237,19 +237,44 @@ export const S06Scorecard: React.FC<S06ScorecardProps> = ({
   }, [autoSticker]);
 
   const fieldObj = JOB_FIELDS.find((f) => f.id === selectedField) || JOB_FIELDS[1];
-  const dynamicPromoParams = new URLSearchParams({
-    n: (candidateName || 'Johan').slice(0, 32),
-    f: (fieldObj.title || 'Logistik & Gudang').slice(0, 40),
-    sc: String(evalResult.overallScore),
-    s: String(evalResult.situationScore),
-    t: String(evalResult.taskScore),
-    a: String(evalResult.actionScore),
-    r: String(evalResult.resultScore),
-    v: vibeTemplate || 'neon',
-  });
-  const cleanAutoSticker = (activeSticker || '').replace(/[^\x20-\x7E]/g, '').trim();
-  if (cleanAutoSticker) dynamicPromoParams.set('st', cleanAutoSticker);
-  const promoUrl = `https://interview-ai-wheat-one.vercel.app/s?${dynamicPromoParams.toString().replace(/\(/g, '%28').replace(/\)/g, '%29')}`;
+  const promoUrl = 'https://interview-ai-wheat-one.vercel.app';
+
+  // Sinkronkan skor terbaru ke server & pre-warm gambar OG di latar belakang agar link bersih https://interview-ai-wheat-one.vercel.app selalu sinkron
+  useEffect(() => {
+    const cleanSticker = (activeSticker || '').replace(/[^\x20-\x7E]/g, '').trim();
+    fetch('/api/s', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        n: (candidateName || 'Johan').slice(0, 32),
+        f: (fieldObj.title || 'Logistik & Gudang').slice(0, 40),
+        sc: evalResult.overallScore,
+        s: evalResult.situationScore,
+        t: evalResult.taskScore,
+        a: evalResult.actionScore,
+        r: evalResult.resultScore,
+        v: vibeTemplate || 'neon',
+        st: cleanSticker,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.ogImageUrl) {
+          fetch(data.ogImageUrl).catch(() => {});
+        }
+      })
+      .catch(() => {});
+  }, [
+    candidateName,
+    fieldObj.title,
+    evalResult.overallScore,
+    evalResult.situationScore,
+    evalResult.taskScore,
+    evalResult.actionScore,
+    evalResult.resultScore,
+    vibeTemplate,
+    activeSticker,
+  ]);
   
   // Format pesan teks Scorecard Evaluasi Interview STAR lengkap untuk WhatsApp & Instagram
   const captionText =

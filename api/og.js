@@ -155,6 +155,93 @@ function el(type, props, ...children) {
 
 export default async function handler(req, res) {
   try {
+    const mode = getParam(req, 'mode', '');
+    if (mode === 'brand') {
+      const brandTree = el(
+        'div',
+        {
+          style: {
+            width: '100%',
+            height: '100%',
+            boxSizing: 'border-box',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            background: 'linear-gradient(180deg, #07111e 0%, #0d1e33 50%, #090d16 100%)',
+            padding: '48px 56px',
+            color: '#ffffff',
+            fontFamily: 'Geist',
+            border: '6px solid #22d3ee',
+          },
+        },
+        el(
+          'div',
+          { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' } },
+          el('span', { style: { fontSize: '28px', fontWeight: 900, color: '#22d3ee', letterSpacing: '0.08em' } }, 'INTERVIEWAI • SIMULATION CORE'),
+          el(
+            'div',
+            {
+              style: {
+                display: 'flex',
+                backgroundColor: 'rgba(16, 185, 129, 0.16)',
+                border: '2px solid rgba(52, 211, 153, 0.45)',
+                borderRadius: '999px',
+                padding: '10px 24px',
+                color: '#34d399',
+                fontSize: '20px',
+                fontWeight: 800,
+              },
+            },
+            'GRATIS 3 PERTANYAAN PERTAMA'
+          )
+        ),
+        el(
+          'div',
+          { style: { display: 'flex', flexDirection: 'column', gap: '20px' } },
+          el('span', { style: { fontSize: '64px', fontWeight: 900, color: '#ffffff', lineHeight: 1.1 } }, 'Latihan Interview Kerja Tanpa Gugup & Auto Lolos HRD'),
+          el(
+            'span',
+            { style: { fontSize: '26px', color: '#cbd5e1', lineHeight: 1.4 } },
+            'Simulasi video call Zoom realistis bersama AI HRD, transkrip suara real-time, evaluasi 4 pilar metode STAR, dan Viral Scorecard 9:16.'
+          )
+        ),
+        el(
+          'div',
+          {
+            style: {
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '18px 28px',
+              borderRadius: '18px',
+              backgroundColor: 'rgba(6, 182, 212, 0.16)',
+              border: '2px solid rgba(34, 211, 238, 0.5)',
+            },
+          },
+          el('span', { style: { fontSize: '22px', fontWeight: 900, color: '#6ee7b7' } }, 'COBA SIMULASI INTERVIEW AI GRATIS'),
+          el('span', { style: { fontSize: '24px', fontWeight: 900, color: '#67e8f9' } }, 'https://interview-ai-wheat-one.vercel.app')
+        )
+      );
+
+      const fontData = getFontBuffer();
+      const svg = await satori(brandTree, {
+        width: 1200,
+        height: 860,
+        fonts: [
+          { name: 'Geist', data: fontData, weight: 400, style: 'normal' },
+          { name: 'Geist', data: fontData, weight: 700, style: 'normal' },
+          { name: 'Geist', data: fontData, weight: 800, style: 'normal' },
+          { name: 'Geist', data: fontData, weight: 900, style: 'normal' },
+        ],
+      });
+      await ensureWasmInitialized();
+      const pngBuffer = Buffer.from(new Resvg(svg).render().asPng());
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Cache-Control', 'public, s-maxage=31536000, max-age=31536000, immutable');
+      res.status(200).send(pngBuffer);
+      return;
+    }
+
     const candidateName = (getParam(req, 'n', 'Johan') || 'Johan').slice(0, 32);
     const jobTrack = (getParam(req, 'f', 'Logistik & Gudang') || 'Logistik & Gudang').slice(0, 40);
     const score = clampScore(getParam(req, 'sc', '78'), 78);
@@ -591,7 +678,7 @@ export default async function handler(req, res) {
     const pngBuffer = Buffer.from(new Resvg(svg).render().asPng());
 
     res.setHeader('Content-Type', 'image/png');
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    res.setHeader('Cache-Control', 'public, s-maxage=31536000, max-age=31536000, immutable');
     res.status(200).send(pngBuffer);
   } catch (err) {
     console.error('OG generation error:', err);

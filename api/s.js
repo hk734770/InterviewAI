@@ -1,3 +1,8 @@
+import fs from 'fs';
+
+const TMP_FILE = '/tmp/interviewai_latest_scorecard.json';
+let latestScorecardMemory = null;
+
 function escapeHtml(str) {
   return String(str || '')
     .replace(/&/g, '&amp;')
@@ -37,38 +42,117 @@ function getParam(req, key, fallback = '') {
   }
 }
 
-export default function handler(req, res) {
+function readLatestSaved() {
+  if (latestScorecardMemory) return latestScorecardMemory;
+  try {
+    if (fs.existsSync(TMP_FILE)) {
+      const raw = fs.readFileSync(TMP_FILE, 'utf8');
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed.sc === 'number') {
+        latestScorecardMemory = parsed;
+        return parsed;
+      }
+    }
+  } catch (_) {}
+  return null;
+}
+
+function saveLatest(payload) {
+  latestScorecardMemory = payload;
+  try {
+    fs.writeFileSync(TMP_FILE, JSON.stringify(payload), 'utf8');
+  } catch (_) {}
+}
+
+export default async function handler(req, res) {
   const proto = req.headers['x-forwarded-proto'] || 'https';
   const host = req.headers['x-forwarded-host'] || req.headers.host || 'interview-ai-wheat-one.vercel.app';
   const origin = `${proto}://${host}`;
 
-  const candidateName = (getParam(req, 'n', 'Johan') || 'Johan').slice(0, 32);
-  const jobTrack = (getParam(req, 'f', 'Logistik & Gudang') || 'Logistik & Gudang').slice(0, 40);
-  const score = clampScore(getParam(req, 'sc', '78'), 78);
-  const situation = clampScore(getParam(req, 's', String(score)), score);
-  const task = clampScore(getParam(req, 't', String(score)), score);
-  const action = clampScore(getParam(req, 'a', String(score)), score);
-  const result = clampScore(getParam(req, 'r', String(score)), score);
-  const vibe = getParam(req, 'v', 'neon') || 'neon';
-  const sticker = getParam(req, 'st', '') || '';
-  const tier = getTierForScore(score);
+  if (req.method === 'POST') {
+    try {
+      let body = req.body;
+      if (typeof body === 'string') {
+        body = JSON.parse(body);
+      } else if (!body) {
+        const chunks = [];
+        for await (const chunk of req) chunks.push(chunk);
+        const raw = Buffer.concat(chunks).toString('utf8');
+        body = raw ? JSON.parse(raw) : {};
+      }
 
-  const ogParams = new URLSearchParams({
-    n: candidateName,
-    f: jobTrack,
-    sc: String(score),
-    s: String(situation),
-    t: String(task),
-    a: String(action),
-    r: String(result),
-    v: vibe,
-  });
-  if (sticker) ogParams.set('st', sticker);
+      const saved = {
+        n: String(body.n || 'Johan').slice(0, 32),
+        f: String(body.f || 'Logistik & Gudang').slice(0, 40),
+        sc: clampScore(body.sc, 78),
+        s: clampScore(body.s, clampScore(body.sc, 78)),
+        t: clampScore(body.t, clampScore(body.sc, 78)),
+        a: clampScore(body.a, clampScore(body.sc, 78)),
+        r: clampScore(body.r, clampScore(body.sc, 78)),
+        v: String(body.v || 'neon'),
+        st: String(body.st || '').replace(/[^\x20-\x7E]/g, '').trim().slice(0, 40),
+        ts: Date.now(),
+      };
+      saveLatest(saved);
 
-  const pageUrl = `${origin}/s?${ogParams.toString()}`;
-  const ogImageUrl = `${origin}/api/og?${ogParams.toString()}`;
-  const pageTitle = `Scorecard STAR ${candidateName}: ${score}/100 (${tier})`;
-  const pageDesc = `Situation ${situation}% • Task ${task}% • Action ${action}% • Result ${result}% (${jobTrack}). Coba simulasi interview kerja AI gratis di InterviewAI!`;
+      const ogParams = new URLSearchParams({
+        n: saved.n,
+        f: saved.f,
+        sc: String(saved.sc),
+        s: String(saved.s),
+        t: String(saved.t),
+        a: String(saved.a),
+        r: String(saved.r),
+        v: saved.v,
+      });
+      if (saved.st) ogParams.set('st', saved.st);
+
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Cache-Control', 'no-store');
+      res.status(200).send(JSON.stringify({ ok: true, ogImageUrl: `${origin}/api/og?${ogParams.toString()}` }));
+      return;
+    } catch (err) {
+      res.status(400).send(JSON.stringify({ ok: false }));
+      return;
+    }
+  }
+
+  const hasQueryScore = getParam(req, 'sc', '') !== '';
+  const saved = !hasQueryScore ? readLatestSaved() : null;
+
+  let ogImageUrl = `${origin}/api/og?mode=brand`;
+  let pageTitle = 'InterviewAI - Simulasi Interview Kerja Realistis';
+  let pageDesc =
+    'Platform simulasi wawancara video call interaktif dengan AI Recruiter, diagnostik komprehensif 4 pilar STAR, dan viral scorecard 9:16 untuk media sosial.';
+
+  if (hasQueryScore || saved) {
+    const candidateName = hasQueryScore ? (getParam(req, 'n', 'Johan') || 'Johan').slice(0, 32) : saved.n;
+    const jobTrack = hasQueryScore ? (getParam(req, 'f', 'Logistik & Gudang') || 'Logistik & Gudang').slice(0, 40) : saved.f;
+    const score = hasQueryScore ? clampScore(getParam(req, 'sc', '78'), 78) : saved.sc;
+    const situation = hasQueryScore ? clampScore(getParam(req, 's', String(score)), score) : saved.s;
+    const task = hasQueryScore ? clampScore(getParam(req, 't', String(score)), score) : saved.t;
+    const action = hasQueryScore ? clampScore(getParam(req, 'a', String(score)), score) : saved.a;
+    const result = hasQueryScore ? clampScore(getParam(req, 'r', String(score)), score) : saved.r;
+    const vibe = hasQueryScore ? getParam(req, 'v', 'neon') || 'neon' : saved.v;
+    const sticker = hasQueryScore ? getParam(req, 'st', '') || '' : saved.st;
+    const tier = getTierForScore(score);
+
+    const ogParams = new URLSearchParams({
+      n: candidateName,
+      f: jobTrack,
+      sc: String(score),
+      s: String(situation),
+      t: String(task),
+      a: String(action),
+      r: String(result),
+      v: vibe,
+    });
+    if (sticker) ogParams.set('st', sticker);
+
+    ogImageUrl = `${origin}/api/og?${ogParams.toString()}`;
+    pageTitle = `Scorecard STAR ${candidateName}: ${score}/100 (${tier})`;
+    pageDesc = `Situation ${situation}% • Task ${task}% • Action ${action}% • Result ${result}% (${jobTrack}). Coba simulasi interview kerja AI gratis di InterviewAI!`;
+  }
 
   const html = `<!doctype html>
 <html lang="id">
@@ -78,7 +162,7 @@ export default function handler(req, res) {
   <meta name="description" content="${escapeHtml(pageDesc)}" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="InterviewAI - Simulasi Interview Kerja Realistis" />
-  <meta property="og:url" content="${escapeHtml(pageUrl)}" />
+  <meta property="og:url" content="${escapeHtml(origin)}/" />
   <meta property="og:title" content="${escapeHtml(pageTitle)}" />
   <meta property="og:description" content="${escapeHtml(pageDesc)}" />
   <meta property="og:image" content="${escapeHtml(ogImageUrl)}" />
@@ -99,6 +183,6 @@ export default function handler(req, res) {
 </html>`;
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.setHeader('Cache-Control', 'public, max-age=300');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.status(200).send(html);
 }
