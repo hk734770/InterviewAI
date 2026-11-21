@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "api/og.js": {
-      "includeFiles": "{api/Geist-Regular.ttf,node_modules/@resvg/resvg-wasm/index_bg.wasm}"
-    }
-  },
   "rewrites": [
     {
       "source": "/",
@@ -11,7 +6,7 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": ".*([Ww]hats[Aa]pp|[Ff]acebook|[Ff]acebot|[Ii]nstagram|[Tt]witterbot|[Tt]elegram|[Ll]inked[Ii]n|[Ss]lackbot|[Dd]iscordbot|meta-externalagent|[Ee]mbedly).*"
+          "value": ".*([Ww]hats[Aa]pp/|facebookexternalhit|[Ff]acebot|meta-externalagent|[Tt]witterbot|[Tt]elegram[Bb]ot|[Ll]inked[Ii]n[Bb]ot|[Ss]lackbot|[Dd]iscordbot).*"
         }
       ],
       "destination": "/api/s"

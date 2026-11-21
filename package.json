@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
-    "@resvg/resvg-wasm": "^2.6.2",
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "^6.1.1",
     "canvas-confetti": "^1.9.4",
@@ -22,7 +21,6 @@
     "motion": "^12.23.24",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
-    "satori": "^0.63.2",
     "vite": "^8.3.0"
   },
   "devDependencies": {

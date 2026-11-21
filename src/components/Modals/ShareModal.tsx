@@ -140,46 +140,6 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     activeScorecardData.catComment,
   ]);
 
-  // Sinkronkan skor terbaru ke /api/s & pre-warm cache CDN /api/og agar preview link bersih https://interview-ai-wheat-one.vercel.app di WA/IG menampilkan skor terbaru
-  useEffect(() => {
-    if (!isOpen) return;
-    const cleanSticker = (activeScorecardData.sticker || '').replace(/[^\x20-\x7E]/g, '').trim();
-    const payload = {
-      n: (activeScorecardData.candidateName || 'Johan').slice(0, 32),
-      f: (activeScorecardData.jobTrack || 'Logistik & Gudang').slice(0, 40),
-      sc: activeScorecardData.score,
-      s: activeScorecardData.situation,
-      t: activeScorecardData.task,
-      a: activeScorecardData.action,
-      r: activeScorecardData.result,
-      v: activeScorecardData.vibeTemplate || 'neon',
-      st: cleanSticker,
-    };
-    fetch('/api/s', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.ogImageUrl) {
-          fetch(data.ogImageUrl).catch(() => {});
-        }
-      })
-      .catch(() => {});
-  }, [
-    isOpen,
-    activeScorecardData.candidateName,
-    activeScorecardData.jobTrack,
-    activeScorecardData.score,
-    activeScorecardData.situation,
-    activeScorecardData.task,
-    activeScorecardData.action,
-    activeScorecardData.result,
-    activeScorecardData.vibeTemplate,
-    activeScorecardData.sticker,
-  ]);
-
   if (!isOpen) return null;
 
   const handleClose = () => {
