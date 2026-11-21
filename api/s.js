@@ -31,19 +31,6 @@ function clampScore(val, fallback) {
 export default async function handler(request) {
   const url = new URL(request.url);
   const origin = `${url.protocol}//${url.host}`;
-  const ua = (request.headers.get('user-agent') || '').toLowerCase();
-
-  // Deteksi crawler/bot preview tautan (WhatsApp, Instagram, Facebook, Telegram, Twitter, LinkedIn, dll.)
-  const isPreviewBot =
-    /whatsapp|facebookexternalhit|facebot|instagram|twitterbot|telegrambot|linkedinbot|slackbot|discordbot|googlebot|bingbot|crawler|spider|preview|meta-externalagent|embedly/i.test(
-      ua
-    );
-
-  // Jika yang membuka adalah pengguna manusia (klik link di WA / IG), langsung arahkan ke aplikasi utama
-  if (!isPreviewBot) {
-    return Response.redirect(`${origin}/`, 302);
-  }
-
   const sp = url.searchParams;
   const candidateName = (sp.get('n') || 'Johan').slice(0, 32);
   const jobTrack = (sp.get('f') || 'Logistik & Gudang').slice(0, 40);
@@ -92,10 +79,10 @@ export default async function handler(request) {
   <meta name="twitter:title" content="${escapeHtml(pageTitle)}" />
   <meta name="twitter:description" content="${escapeHtml(pageDesc)}" />
   <meta name="twitter:image" content="${escapeHtml(ogImageUrl)}" />
-  <meta http-equiv="refresh" content="0;url=${escapeHtml(origin)}/" />
 </head>
-<body style="background:#080c14;color:#e2e8f0;font-family:sans-serif;padding:24px;">
+<body style="background:#080c14;color:#e2e8f0;font-family:sans-serif;padding:24px;text-align:center;">
   <p>Membuka InterviewAI Simulation Core...</p>
+  <p><a href="${escapeHtml(origin)}/" style="color:#38bdf8;">Klik di sini jika tidak otomatis terbuka</a></p>
   <script>window.location.replace(${JSON.stringify(`${origin}/`)});</script>
 </body>
 </html>`;
