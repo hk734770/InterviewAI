@@ -1,7 +1,3 @@
-export const config = {
-  runtime: 'edge',
-};
-
 function escapeHtml(str) {
   return String(str || '')
     .replace(/&/g, '&amp;')
@@ -23,24 +19,38 @@ function getTierForScore(score) {
 }
 
 function clampScore(val, fallback) {
-  const num = Number.parseInt(val || '', 10);
+  const num = Number.parseInt(Array.isArray(val) ? val[0] : (val || ''), 10);
   if (Number.isNaN(num)) return fallback;
   return Math.max(0, Math.min(100, num));
 }
 
-export default async function handler(request) {
-  const url = new URL(request.url);
-  const origin = `${url.protocol}//${url.host}`;
-  const sp = url.searchParams;
-  const candidateName = (sp.get('n') || 'Johan').slice(0, 32);
-  const jobTrack = (sp.get('f') || 'Logistik & Gudang').slice(0, 40);
-  const score = clampScore(sp.get('sc'), 78);
-  const situation = clampScore(sp.get('s'), score);
-  const task = clampScore(sp.get('t'), score);
-  const action = clampScore(sp.get('a'), score);
-  const result = clampScore(sp.get('r'), score);
-  const vibe = sp.get('v') || 'neon';
-  const sticker = sp.get('st') || '';
+function getParam(req, key, fallback = '') {
+  if (req.query && req.query[key] !== undefined) {
+    const v = req.query[key];
+    return String(Array.isArray(v) ? v[0] : v);
+  }
+  try {
+    const u = new URL(req.url || '/', 'https://interview-ai-wheat-one.vercel.app');
+    return u.searchParams.get(key) || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export default function handler(req, res) {
+  const proto = req.headers['x-forwarded-proto'] || 'https';
+  const host = req.headers['x-forwarded-host'] || req.headers.host || 'interview-ai-wheat-one.vercel.app';
+  const origin = `${proto}://${host}`;
+
+  const candidateName = (getParam(req, 'n', 'Johan') || 'Johan').slice(0, 32);
+  const jobTrack = (getParam(req, 'f', 'Logistik & Gudang') || 'Logistik & Gudang').slice(0, 40);
+  const score = clampScore(getParam(req, 'sc', '78'), 78);
+  const situation = clampScore(getParam(req, 's', String(score)), score);
+  const task = clampScore(getParam(req, 't', String(score)), score);
+  const action = clampScore(getParam(req, 'a', String(score)), score);
+  const result = clampScore(getParam(req, 'r', String(score)), score);
+  const vibe = getParam(req, 'v', 'neon') || 'neon';
+  const sticker = getParam(req, 'st', '') || '';
   const tier = getTierForScore(score);
 
   const ogParams = new URLSearchParams({
@@ -55,6 +65,7 @@ export default async function handler(request) {
   });
   if (sticker) ogParams.set('st', sticker);
 
+  const pageUrl = `${origin}/s?${ogParams.toString()}`;
   const ogImageUrl = `${origin}/api/og?${ogParams.toString()}`;
   const pageTitle = `Scorecard STAR ${candidateName}: ${score}/100 (${tier})`;
   const pageDesc = `Situation ${situation}% • Task ${task}% • Action ${action}% • Result ${result}% (${jobTrack}). Coba simulasi interview kerja AI gratis di InterviewAI!`;
@@ -67,7 +78,7 @@ export default async function handler(request) {
   <meta name="description" content="${escapeHtml(pageDesc)}" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="InterviewAI - Simulasi Interview Kerja Realistis" />
-  <meta property="og:url" content="${escapeHtml(url.toString())}" />
+  <meta property="og:url" content="${escapeHtml(pageUrl)}" />
   <meta property="og:title" content="${escapeHtml(pageTitle)}" />
   <meta property="og:description" content="${escapeHtml(pageDesc)}" />
   <meta property="og:image" content="${escapeHtml(ogImageUrl)}" />
@@ -87,11 +98,7 @@ export default async function handler(request) {
 </body>
 </html>`;
 
-  return new Response(html, {
-    status: 200,
-    headers: {
-      'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'public, max-age=300',
-    },
-  });
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=300');
+  res.status(200).send(html);
 }

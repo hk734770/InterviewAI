@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "api/og.js": {
+      "includeFiles": "{api/Geist-Regular.ttf,node_modules/@resvg/resvg-wasm/index_bg.wasm}"
+    }
+  },
   "rewrites": [
     {
       "source": "/s",
